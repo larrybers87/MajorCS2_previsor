@@ -1,6 +1,7 @@
 # Regras da fase suíça (e playoffs) com citações
 
-Fonte: [major-supplemental-rulebook.md](major-supplemental-rulebook.md) ("RB"; L = linhas).
+Fonte: `docs/major-supplemental-rulebook.md` ("RB"; L = linhas), cópia local **não
+versionada**; ver [fontes_valve.md](fontes_valve.md) para versão, hash e como baixar.
 Em 26/11/2026 o arquivo local era **idêntico** ao do repositório
 `ValveSoftware/counter-strike_rules_and_regs` (último commit do arquivo: `745a40758e`,
 06/10/2026). Mesmo assim a tabela de convites ainda é a de "Winter 2025" (L42) e a de

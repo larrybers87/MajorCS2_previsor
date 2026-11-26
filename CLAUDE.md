@@ -8,7 +8,8 @@ suíço e, no Stage 3, também posição final e chances nos playoffs. Atualiza�
 ## Leitura obrigatória antes de agir
 1. `claude/design-v0.md` (arquitetura, validação, roadmap; ver "Atualizações 26/11")
 2. `claude/fontes-de-dados.md` (histórico de fontes; **as decisões abaixo prevalecem**)
-3. `docs/` (rulebook da Valve e documentos de regras); `docs/regras_suica.md` resume com citações
+3. `docs/` (rulebook da Valve e documentos de regras); `docs/regras_suica.md` resume com
+   citações. As cópias da Valve ficam só no disco (sem licença): ver `docs/fontes_valve.md`
 4. `docs/decisoes.md` (decisões adotadas; não reabrir sem pedir)
 5. `docs/duvidas_abertas.md` (pontos em aberto e divergências)
 
@@ -48,8 +49,10 @@ predict_stage2 --conditioned [--stage1 <CSV parcial>]
 - Nunca usar force push, `git reset --hard` nem apagar arquivos do usuário. Antes de
   qualquer operação git destrutiva, perguntar.
 - Não commitar dados brutos, segredos nem e-mail em código (ver `.gitignore`).
-- Antes de qualquer push, mostrar `git log --format='%an <%ae>'`; se houver e-mail
-  pessoal real, parar e perguntar.
+- Antes de qualquer push, mostrar `git log --format='%an <%ae>'`. O autor e o e-mail
+  atuais foram autorizados; outro e-mail pessoal: parar e perguntar. Push só de `main`
+  (nunca `--all`, `--tags`, `--mirror`).
+- Não versionar arquivos de terceiros sem licença que permita redistribuir.
 - Coleta: salvar o bruto em disco na primeira vez e nunca coletar duas vezes; respeitar
   os limites da fonte. Coleta em massa só com aprovação explícita.
 - Código de terceiros é auditado (`scraper-reviewer`) antes de ser instalado ou executado.
@@ -70,7 +73,8 @@ predict_stage2 --conditioned [--stage1 <CSV parcial>]
    de cada simulação na v1, ratings atualizados entre execuções.
 4. V3 (Stage 1) é retrospectivo; teste prospectivo é o Stage 2, com previsões em commit
    antes da primeira partida.
-5. Repositório pode seguir público (ver regra de push).
+5. Repositório público; push de `main` autorizado.
+6. D15 fechada: THE ONE = 1win e GOSH = BC.Game, mapeados pelo elenco.
 - Dados a partir de 2025-06-01 com decaimento temporal (half-life a testar a partir do
   B1); dashboard local; aceite de modelo por log loss no backtest; calibração
   obrigatória; sem rede neural no escopo inicial.

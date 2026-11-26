@@ -17,3 +17,11 @@ __pycache__/
 *.pyc
 *.egg-info/
 .pytest_cache/
+
+# Cópias de documentos da Valve (repositório sem licença; ver docs/fontes_valve.md)
+docs/.gitignore
+docs/Declaration of Conflicts of Interest.pdf
+docs/major-supplemental-rulebook.md
+docs/tournament-item-submission-guidelines.md
+docs/tournament-operation-requirements-exceptions.md
+docs/tournament-operation-requirements.md
