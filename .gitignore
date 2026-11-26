@@ -1,0 +1,18 @@
+# Dados brutos e processados (nunca commitar)
+data/raw/
+data/processed/
+*.parquet
+*.sqlite
+*.sqlite3
+*.db
+
+# Segredos e configuração local
+.env
+.claude/settings.local.json
+
+# Ambientes e caches Python
+.venv/
+__pycache__/
+*.pyc
+*.egg-info/
+.pytest_cache/
