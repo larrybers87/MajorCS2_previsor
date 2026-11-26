@@ -192,5 +192,10 @@ def test_series_probability():
     assert series_probability(0.5, 3) == 0.5
     assert series_probability(0.7, 3) == pytest.approx(0.7**2 * (3 - 1.4))
     assert series_probability(0.7, 1) == 0.7
+    # Bo5 contra a soma binomial: vence com 0, 1 ou 2 mapas perdidos.
+    assert series_probability(0.7, 5) == pytest.approx(
+        0.7**3 + 3 * 0.7**3 * 0.3 + 6 * 0.7**3 * 0.3**2
+    )
+    assert series_probability(0.5, 5) == pytest.approx(0.5)
     with pytest.raises(ValueError):
-        series_probability(0.5, 5)
+        series_probability(0.5, 2)

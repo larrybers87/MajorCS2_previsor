@@ -14,11 +14,18 @@ ProbFn = Callable[[str, str, int], float]
 
 
 def series_probability(map_probability: float, best_of: int) -> float:
-    """Probabilidade de vencer a série com mapas independentes e probabilidade constante."""
+    """Probabilidade de vencer a série com mapas independentes e probabilidade constante.
+
+    Aceita ``float`` ou array numpy.
+    """
+    p = map_probability
     if best_of == 1:
-        return map_probability
+        return p
     if best_of == 3:
-        return map_probability**2 * (3 - 2 * map_probability)
+        return p**2 * (3 - 2 * p)
+    if best_of == 5:
+        q = 1 - p
+        return p**3 * (1 + 3 * q + 6 * q**2)
     raise ValueError(f"formato não suportado: Bo{best_of}")
 
 
