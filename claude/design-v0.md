@@ -82,3 +82,24 @@ Se a pasta local e o remoto tiverem arquivos com o mesmo nome (README, .gitignor
 1. Como coletar dados do HLTV (Chrome, scraper local, outra fonte)?
 2. Formato do dashboard: Streamlit local ou site estático (GitHub Pages) atualizado por script?
 3. Tempo de histórico a coletar (12 meses? desde o Austin 2025?).
+
+## Atualizações 26/11
+Onde esta seção divergir do texto acima, vale esta seção. Detalhes em
+`docs/decisoes.md`, `docs/regras_suica.md` e `docs/duvidas_abertas.md`.
+
+### Correções de regras (o rulebook vence)
+- **D4 — emparelhamento:** "melhor ordenado x pior ordenado disponível sem rematch" vale
+  só nas rodadas 2 e 3. Nas rodadas 4 e 5 vale a tabela de 15 prioridades do rulebook
+  (primeira linha sem rematch).
+- **D5 — seeds dos Stages 2 e 3:** convidados são os seeds 1-8 (pelo VRS); os 8
+  classificados são os seeds 9-16 **pelo seed final do stage anterior** (cartel,
+  Difficulty, seed inicial), não pelo VRS.
+
+### Decisões
+- Fontes somente permitidas (VRS oficial, API da Liquipedia, GRID). HLTV automatizado,
+  contorno de anti-bot, SeleniumBase UC e undetected-chromedriver: proibidos.
+- Stage 3 todo em Bo3 e final em Bo5 ativos por configuração (não constam no rulebook);
+  3º lugar em Bo3 como hipótese; demais partidas dos playoffs em Bo3.
+- Posição final = seed final do stage. Probabilidades fixas dentro de cada simulação (v1).
+- V3 (Stage 1) é retrospectivo; o teste prospectivo é o Stage 2, com previsões em commit
+  antes da primeira partida.
