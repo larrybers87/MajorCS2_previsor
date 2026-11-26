@@ -122,17 +122,3 @@ def test_state_validates_seeds():
     teams = tuple(Team(n, 1) for n in NAMES)
     with pytest.raises(ValueError):
         StageState(teams)
-
-
-@pytest.mark.skip(reason="V2 do design: aguarda resultados reais de eventos passados em data/")
-def test_v2_reproduces_real_pairings():
-    """Gancho da validação V2: 100% de coincidência com os emparelhamentos reais.
-
-    Para cada stage histórico: criar ``StageState`` com os seeds iniciais oficiais,
-    registrar todas as partidas reais (rodada, times, vencedor) como ``Match`` e
-    exigir ``check_pairings(state) == []``.
-    """
-    historical_stages: list[StageState] = []  # preencher a partir de data/processed
-    assert historical_stages, "sem dados históricos"
-    for state in historical_stages:
-        assert check_pairings(state) == []
