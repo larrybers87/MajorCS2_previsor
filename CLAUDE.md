@@ -27,6 +27,7 @@ conda env create -f environment.yml     # primeira vez
 conda activate majorcs2
 pytest                                  # todos os testes
 pytest tests/test_swiss_rules.py -v     # um arquivo
+python -m swiss.exhaustive_check        # verificação exaustiva dos emparelhamentos (~20 min)
 ```
 
 ## Regras de trabalho
