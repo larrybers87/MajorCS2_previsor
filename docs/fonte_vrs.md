@@ -76,8 +76,21 @@ Event Weight, Bounty Collected, Opponent Network, LAN Wins, H2H Adj., Roster`.
 - As linhas "mesmo par no mesmo dia" não excedem o que um único snapshot já mostra: não
   são duplicatas criadas pela união. Se o VRS repetir partidas internamente, não há como
   detectar.
-- **Vazamento:** 16 linhas têm data igual à do próprio snapshot (09-01-2025 e 01-05-2026),
-  nenhuma posterior. Como o rating usado é sempre de snapshot anterior à partida, não há
-  vazamento.
+- **Datas:** o VRS grava o dia no fuso `America/Los_Angeles` (`model/report.js` L206 e
+  `model/main.js` L26 do repositório). Singapura está 16 h à frente em novembro; por isso
+  o corte da calibração é **exclusivo em 2026-11-23**.
+- **Vazamento:** 16 linhas têm data igual à do próprio snapshot (2025-09-01 e
+  2026-01-05), nenhuma posterior; a ingestão falha se aparecer uma posterior. O rating
+  usado é sempre de snapshot anterior à partida. Snapshots publicados a partir do corte
+  não são lidos.
+- **Commit fixado:** `ingest.seeds` e `ingest.vrs_matches` falham se o clone estiver em
+  outro commit (`VRS_ALLOW_OTHER_COMMIT=1` libera uma atualização intencional).
+- **Não verificado (clone raso):** a data no nome do arquivo não prova quando ele foi
+  publicado, nem que arquivos antigos não tenham sido regenerados depois. Daria para
+  conferir com o histórico completo do git.
+- **Viés de seleção:** a união usa snapshots posteriores à partida. No treino do B0 só 2
+  de 5.196 partidas são vistas por um único lado; sem elas o beta vai de 0,1558 a 0,1557.
+- **`lan` não pode ser feature:** só aparece em vitórias que entram nas 10 melhores do
+  time, logo depende do resultado e do futuro.
 - **Lacunas:** nada de 02/11 a 23/11/2026 (não há snapshot posterior); rosters que nunca
   aparecem ranqueados não têm arquivo próprio; LAN, formato e evento ausentes.

@@ -6,19 +6,22 @@ Saída: probabilidade de cada time terminar 3-0, 3-1, 3-2, 2-3, 1-3, 0-3 em cada
 suíço e, no Stage 3, também posição final e chances nos playoffs. Atualização ao vivo.
 
 ## Leitura obrigatória antes de agir
-1. `claude/design-v0.md` (arquitetura, validação, roadmap)
-2. `claude/fontes-de-dados.md` (fontes de dados e decisões)
+1. `claude/design-v0.md` (arquitetura, validação, roadmap; ver "Atualizações 26/11")
+2. `claude/fontes-de-dados.md` (histórico de fontes; **as decisões abaixo prevalecem**)
 3. `docs/` (rulebook da Valve e documentos de regras); `docs/regras_suica.md` resume com citações
-4. `docs/duvidas_abertas.md` (pontos em aberto e divergências)
+4. `docs/decisoes.md` (decisões adotadas; não reabrir sem pedir)
+5. `docs/duvidas_abertas.md` (pontos em aberto e divergências)
 
 **Se algo contradisser o rulebook (`docs/major-supplemental-rulebook.md`), o rulebook
-vence: registre a divergência em `docs/duvidas_abertas.md`.**
+vence: registre a divergência em `docs/duvidas_abertas.md`.** Exceção explícita: a
+decisão 2 abaixo (Stage 3 em Bo3 e final em Bo5), tomada pelo Larry e configurável.
 
 ## Convenções
 - Python 3.11 (conda, Windows). Ambiente: `majorcs2`.
 - Comentários, docstrings e documentação em português; identificadores de código em inglês.
 - Código em `src/{ingest,features,models,swiss,sim,backtest}`, dashboard em `app/`,
-  testes em `tests/`, dados em `data/{raw,processed}` (fora do git).
+  testes em `tests/`, dados em `data/{raw,processed,manual}` (fora do git), previsões em
+  `predictions/` (versionadas, nunca sobrescritas).
 - Features sempre point-in-time: só dados anteriores à data da partida.
 
 ## Comandos
@@ -26,36 +29,48 @@ vence: registre a divergência em `docs/duvidas_abertas.md`.**
 conda env create -f environment.yml     # primeira vez
 conda activate majorcs2
 pytest                                  # todos os testes
-pytest tests/test_swiss_rules.py -v     # um arquivo
 python -m swiss.exhaustive_check        # verificação exaustiva dos emparelhamentos (~20 min)
+
+git clone --depth 1 https://github.com/ValveSoftware/counter-strike_regional_standings ../_external/counter-strike_regional_standings
+python -m ingest.seeds                  # data/processed/seeds_singapore.csv
+python -m ingest.vrs_matches            # data/processed/matches.parquet
+python -m backtest.b0_calibration       # data/processed/b0_params.json e docs/b0_calibracao.md
+python -m sim.v3_stage1 --results data/manual/stage1_results.csv
+predict_stage2 --stage1 data/manual/stage1_results.csv [--stage2 data/manual/stage2_results.csv]
+predict_stage2 --conditioned [--stage1 <CSV parcial>]
 ```
 
 ## Regras de trabalho
 - Não chute. Regra ou requisito ambíguo ou ausente: anotar em `docs/duvidas_abertas.md`
   e perguntar. Não preencher lacunas com suposições.
-- Marcar explicitamente o que é VERIFICADO (com citação da seção do rulebook) e o que é HIPÓTESE.
+- Marcar explicitamente o que é VERIFICADO (com citação) e o que é HIPÓTESE.
 - Usar lista de tarefas e marcar como concluído só o que foi testado.
 - Nunca usar force push, `git reset --hard` nem apagar arquivos do usuário. Antes de
   qualquer operação git destrutiva, perguntar.
-- Não commitar dados brutos nem segredos (ver `.gitignore`).
-- Coleta: salvar o bruto em disco na primeira vez e nunca coletar duas vezes; rate limit
-  baixo. Coleta em massa só com aprovação explícita.
+- Não commitar dados brutos, segredos nem e-mail em código (ver `.gitignore`).
+- Antes de qualquer push, mostrar `git log --format='%an <%ae>'`; se houver e-mail
+  pessoal real, parar e perguntar.
+- Coleta: salvar o bruto em disco na primeira vez e nunca coletar duas vezes; respeitar
+  os limites da fonte. Coleta em massa só com aprovação explícita.
 - Código de terceiros é auditado (`scraper-reviewer`) antes de ser instalado ou executado.
 
-## Subagentes (`.claude/agents/`)
+## Subagentes (`.claude/agents/`, todos somente leitura: Read, Grep, Glob)
 - `rules-auditor`: extrai regras do rulebook com citação; nunca escreve código.
-- `leakage-reviewer`: procura vazamento temporal em features/backtest; somente leitura.
-- `scraper-reviewer`: audita código de terceiros; somente leitura.
+- `leakage-reviewer`: procura vazamento temporal em features/backtest.
+- `scraper-reviewer`: audita código de terceiros.
 
-## Decisões já tomadas
-- Escopo temporal dos dados: a partir do Major de Austin 2025 (2025-06-01), com
-  decaimento exponencial (half-life é hiperparâmetro; testar ~60/90/180 dias).
-- Dashboard local por enquanto.
-- Coleta por scraper (preferência por Selenium como fallback). Candidato: `hltv-crawler`
-  (auditar antes). Rankings: VRS oficial da Valve. Liquipedia API opcional (rosters).
-  GRID Open Access: candidatar em paralelo.
-- Aceite de modelos: só substitui o anterior quem vencer em log loss no backtest; se
-  M1/M2 não vencerem o B1, usamos o B1. Calibração obrigatória.
-- Rede neural fora do escopo inicial.
-- V3: modelo do Stage 1 congelado com dados até 2026-11-23; nenhum ajuste olhando o
-  resultado do Stage 1.
+## Decisões já tomadas (detalhes em `docs/decisoes.md`)
+1. **Fontes somente permitidas:** VRS oficial da Valve, API MediaWiki da Liquipedia (sem
+   HTML; ler os termos antes e seguir o limite) e GRID Open Access (sem código ainda).
+   **Proibido:** contornar Cloudflare/anti-bot, SeleniumBase UC,
+   undetected-chromedriver e acesso automatizado ao HLTV.
+2. Stage 3 todo Bo3 e final Bo5 ativos por configuração; 3º lugar em Bo3 (hipótese);
+   playoffs Bo3 nas demais fases; Stages 1 e 2 pelo rulebook.
+3. H1 provisória; H5 (posição final = seed final do stage); probabilidades fixas dentro
+   de cada simulação na v1, ratings atualizados entre execuções.
+4. V3 (Stage 1) é retrospectivo; teste prospectivo é o Stage 2, com previsões em commit
+   antes da primeira partida.
+5. Repositório pode seguir público (ver regra de push).
+- Dados a partir de 2025-06-01 com decaimento temporal (half-life a testar a partir do
+  B1); dashboard local; aceite de modelo por log loss no backtest; calibração
+  obrigatória; sem rede neural no escopo inicial.
