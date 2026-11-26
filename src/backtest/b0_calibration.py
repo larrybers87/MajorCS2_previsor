@@ -8,7 +8,8 @@ Lê ``data/processed/matches.parquet``; grava ``data/processed/b0_params.json`` 
 relatório ``docs/b0_calibracao.md``.
 
 Protocolo (definido antes de ver qualquer resultado do Stage 1):
-- dados de 2025-06-01 até antes de 2026-11-24, só partidas com rating dos dois lados;
+- dados de 2025-06-01 até antes de 2026-11-23 (datas do VRS, fuso do Pacífico), só
+  partidas com rating dos dois lados;
 - rating = último snapshot VRS estritamente anterior à data da partida;
 - walk-forward mensal: o mês M é previsto com beta ajustado nas partidas anteriores a M;
 - população-alvo da avaliação: os dois times no top 100 do snapshot anterior;
@@ -28,7 +29,7 @@ import pandas as pd
 from ingest.vrs import PROJECT_ROOT
 from ingest.vrs_matches import MATCHES_PATH, WINDOW_START
 from models.b0 import TRANSFORMS, features, fit_beta, negative_log_likelihood, series_win_probability
-from sim.singapore2026 import DATA_CUTOFF
+from sim.singapore2026 import DATA_CUTOFF, PINNED_VRS_COMMIT
 
 from .metrics import brier_each, cluster_bootstrap_ci, log_loss_each
 
@@ -191,6 +192,8 @@ def calibrate(data: pd.DataFrame, seed: int = RNG_SEED) -> dict:
     mask_bo1 &= target
 
     return {
+        "data_cutoff_exclusive": str(DATA_CUTOFF),
+        "vrs_commit": PINNED_VRS_COMMIT,
         "transform": transform,
         "population": population,
         "assumed_best_of": ASSUMED_BEST_OF,

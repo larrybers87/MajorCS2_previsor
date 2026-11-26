@@ -89,11 +89,11 @@ def test_walk_forward_does_not_use_the_future():
 def test_calibration_window_excludes_the_major_and_rejects_leakage():
     data = synthetic_matches(50)
     extra = data.iloc[:2].assign(
-        date=[pd.Timestamp("2026-11-24"), pd.Timestamp("2025-05-31")],
+        date=[pd.Timestamp("2026-11-23"), pd.Timestamp("2025-05-31")],
         rating_snapshot=pd.Timestamp("2025-05-01"),
     )
     kept = rated_matches(pd.concat([data, extra]))
-    assert kept["date"].max() < pd.Timestamp("2026-11-24")
+    assert kept["date"].max() < pd.Timestamp("2026-11-23")
     assert kept["date"].min() >= pd.Timestamp("2025-06-01")
     leaked = data.assign(rating_snapshot=data["date"])
     with pytest.raises(ValueError, match="vazamento"):

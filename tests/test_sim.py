@@ -229,6 +229,29 @@ def test_predict_stage2_conditioned(files):
     assert (table["P(avançar)"] <= table["P(participa)"] + 1e-9).all()
 
 
+def test_params_trained_during_the_major_are_rejected(files, capsys):
+    params = json.loads(files["params"].read_text(encoding="utf-8"))
+    files["params"].write_text(json.dumps(params | {"train_last": "2026-11-23"}), encoding="utf-8")
+    code = predict_stage2.main(
+        ["--conditioned", "--sims", "10", "--out", str(files["dir"] / "out"),
+         "--seeds-file", str(files["seeds"]), "--params-file", str(files["params"])]
+    )  # fmt: skip
+    assert code == 1 and "período do Major" in capsys.readouterr().out
+
+
+def test_v3_hides_record_metrics_while_stage_is_open(files):
+    csv_path = to_csv(play_stage(stage1_base(), rounds=3), files["dir"] / "partial.csv")
+    out = files["dir"] / "v3"
+    code = v3_stage1.main(
+        ["--results", str(csv_path), "--sims", "500", "--out", str(out),
+         "--seeds-file", str(files["seeds"]), "--params-file", str(files["params"])]
+    )  # fmt: skip
+    assert code == 0
+    meta = json.loads((next(out.iterdir()) / "meta.json").read_text(encoding="utf-8"))
+    assert "log_score_cartel" not in meta["scores"] and meta["scores"]["partidas"] == 24
+    assert meta["params_file_sha256"]
+
+
 def test_predict_stage2_requires_complete_stage1(files, capsys):
     csv_path = to_csv(play_stage(stage1_base(), rounds=4), files["dir"] / "partial.csv")
     with pytest.raises(SystemExit):

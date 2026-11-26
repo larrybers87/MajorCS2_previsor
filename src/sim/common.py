@@ -14,6 +14,9 @@ from backtest.b0_calibration import PARAMS_PATH
 from ingest.vrs import PROJECT_ROOT
 from models.b0 import B0Model
 
+from .results import file_sha256
+from .singapore2026 import DATA_CUTOFF
+
 MANUAL_DIR = PROJECT_ROOT / "data" / "manual"
 PREDICTIONS_DIR = PROJECT_ROOT / "predictions"
 
@@ -21,7 +24,22 @@ PREDICTIONS_DIR = PROJECT_ROOT / "predictions"
 def load_params(path: Path = PARAMS_PATH) -> dict:
     if not path.exists():
         raise FileNotFoundError(f"{path} não existe; rode: python -m backtest.b0_calibration")
-    return json.loads(path.read_text(encoding="utf-8"))
+    params = json.loads(path.read_text(encoding="utf-8"))
+    if params["train_last"] >= str(DATA_CUTOFF):
+        raise ValueError(
+            f"parâmetros treinados até {params['train_last']}, dentro do período do Major "
+            f"(corte exclusivo {DATA_CUTOFF})"
+        )
+    return params
+
+
+def freeze_inputs(out: Path, seeds_path: Path, params_path: Path) -> dict:
+    """Copia os parâmetros para a pasta da previsão e devolve os hashes das entradas."""
+    (out / "model_params.json").write_bytes(params_path.read_bytes())
+    return {
+        "seeds_file_sha256": file_sha256(seeds_path),
+        "params_file_sha256": file_sha256(params_path),
+    }
 
 
 def b0_from(seeds: pd.DataFrame, beta: float, transform: str) -> B0Model:

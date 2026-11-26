@@ -33,6 +33,7 @@ from .common import (
     MANUAL_DIR,
     PREDICTIONS_DIR,
     b0_from,
+    freeze_inputs,
     load_params,
     markdown_table,
     new_output_dir,
@@ -176,7 +177,6 @@ def main(argv: list[str] | None = None) -> int:
         "stage1_csv_sha256": file_sha256(stage1_path) if stage1_path else None,
         "stage2_csv_sha256": file_sha256(args.stage2) if args.stage2 else None,
         "stage1_matches_decided": sum(r.winner is not None for r in rows1),
-        "seeds_file_sha256": file_sha256(args.seeds_file),
     }
     invited = entrants_by_seed(seeds, 2)
     files: dict[str, pd.DataFrame] = {}
@@ -287,6 +287,7 @@ def main(argv: list[str] | None = None) -> int:
     metadata["mode"] = mode
     metadata["rule_notes"] = notes
     out = new_output_dir(args.out, metadata)
+    metadata |= freeze_inputs(out, args.seeds_file, args.params_file)
     for name, frame in files.items():
         frame.to_csv(out / name, index=False, encoding="utf-8", float_format="%.6f")
     summary = _summary_header(metadata, params, mode)

@@ -72,6 +72,20 @@ def repo_commit(root: Path) -> str:
     return result.stdout.strip()
 
 
+def require_commit(root: Path, expected: str) -> str:
+    """Falha se o clone não estiver no commit fixado (modelo congelado).
+
+    ``VRS_ALLOW_OTHER_COMMIT=1`` libera, para quando a atualização for intencional.
+    """
+    found = repo_commit(root)
+    if found != expected and os.environ.get("VRS_ALLOW_OTHER_COMMIT") != "1":
+        raise RuntimeError(
+            f"o clone do VRS está em {found[:10]}, mas o modelo usa {expected[:10]}; "
+            "ver docs/fonte_vrs.md"
+        )
+    return found
+
+
 def list_snapshots(root: Path) -> list[Snapshot]:
     """Um snapshot global por data, em ordem; ``invitation`` tem preferência."""
     found: dict[date, Snapshot] = {}

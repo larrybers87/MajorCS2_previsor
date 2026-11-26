@@ -26,6 +26,7 @@ from .common import (
     MANUAL_DIR,
     PREDICTIONS_DIR,
     b0_from,
+    freeze_inputs,
     load_params,
     markdown_table,
     new_output_dir,
@@ -109,7 +110,9 @@ def scores(matches: pd.DataFrame, teams: pd.DataFrame) -> dict:
             "acerto_do_favorito": float((matches["P(vencedor)"] > 0.5).mean()),
         }  # fmt: skip
     finished = teams[teams["encerrado"]]
-    if len(finished):
+    # Só com o stage completo: antes disso, os times encerrados são selecionados pelo
+    # resultado (após a rodada 3, apenas 3-0 e 0-3).
+    if len(finished) == len(teams):
         # Referência sem informação: todo time com a frequência de cada cartel no formato.
         baseline = dict(zip(FINAL_RECORD_LABELS, np.array(FINAL_RECORD_COUNTS) / N_TEAMS))
         advanced = finished["cartel_observado"].str.startswith("3-").to_numpy()
@@ -229,6 +232,7 @@ def main(argv: list[str] | None = None) -> int:
         "",
     ]
     out = new_output_dir(args.out, metadata)
+    metadata |= freeze_inputs(out, args.seeds_file, args.params_file)
     matches.to_csv(out / "matches.csv", index=False, encoding="utf-8")
     teams.to_csv(out / "teams.csv", index=False, encoding="utf-8")
     (out / "summary.md").write_text("\n".join(lines), encoding="utf-8")

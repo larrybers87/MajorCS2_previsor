@@ -5,7 +5,11 @@ Uso::
     python -m ingest.vrs_matches
 
 Grava ``data/processed/matches.parquet``. O VRS não informa formato (Bo1/Bo3),
-placar, evento nem tier; essas colunas ficam vazias.
+placar, evento nem tier; essas colunas ficam vazias. As datas são as do VRS (fuso
+America/Los_Angeles).
+
+ATENÇÃO: ``lan`` depende do resultado e de snapshots posteriores (só aparece em vitórias
+entre as 10 melhores do time). NÃO usar como feature.
 """
 
 from __future__ import annotations
@@ -18,7 +22,7 @@ from pathlib import Path
 
 import pandas as pd
 
-from sim.singapore2026 import DATA_CUTOFF
+from sim.singapore2026 import DATA_CUTOFF, PINNED_VRS_COMMIT
 
 from .vrs import (
     PROJECT_ROOT,
@@ -28,8 +32,8 @@ from .vrs import (
     list_snapshots,
     parse_detail,
     parse_standings,
-    repo_commit,
     repo_dir,
+    require_commit,
 )
 
 MATCHES_PATH = PROJECT_ROOT / "data" / "processed" / "matches.parquet"
@@ -221,19 +225,35 @@ def build_table(matches: list[RawMatch], book: RatingBook) -> pd.DataFrame:
 
 
 def load_all(root: Path, start: date, end: date) -> tuple[pd.DataFrame, dict]:
-    """Partidas com ``start <= data < end`` e um relatório de cobertura."""
-    snapshots: list[Snapshot] = list_snapshots(root)
+    """Partidas com ``start <= data < end`` e um relatório de cobertura.
+
+    Só são lidos snapshots publicados antes de ``end``: um snapshot posterior ao corte
+    mudaria a composição da amostra em função de resultados posteriores. Levanta erro se
+    um snapshot usado trouxer partida com data posterior à sua própria.
+    """
+    snapshots: list[Snapshot] = [s for s in list_snapshots(root) if s.published < end]
     standings = {s.published: parse_standings(s.path) for s in snapshots}
+    if not snapshots:
+        raise ValueError(f"nenhum snapshot publicado antes de {end}")
+    earlier = [s for s in snapshots if s.published < start]
     merger = MatchMerger()
     stats = Counter()
-    future_rows = 0
-    for snapshot in snapshots:
-        if snapshot.published < start:
-            continue
+    # O último snapshot anterior à janela também dá rating: é conferido, mas não soma partidas.
+    for snapshot in earlier[-1:] + [s for s in snapshots if s.published >= start]:
         rows: list[DetailMatch] = []
         for standing in standings[snapshot.published]:
             rows.extend(parse_detail(snapshot.folder / standing.detail))
-        future_rows += sum(r.played_on >= snapshot.published for r in rows)
+        later = [r for r in rows if r.played_on > snapshot.published]
+        if later:
+            raise ValueError(
+                f"snapshot {snapshot.published} traz {len(later)} linhas com data posterior "
+                "(os ratings dele incluiriam o futuro)"
+            )
+        if snapshot.published < start:
+            continue
+        stats["rows_dated_on_snapshot_day"] += sum(
+            r.played_on == snapshot.published for r in rows
+        )
         rows = [r for r in rows if start <= r.played_on < end]
         found, inconsistent = matches_in_snapshot(rows, snapshot.published)
         merger.add_snapshot(found)
@@ -242,7 +262,6 @@ def load_all(root: Path, start: date, end: date) -> tuple[pd.DataFrame, dict]:
         stats["inconsistent_ids"] += inconsistent
     table = build_table(merger.matches(), RatingBook(standings))
     report = dict(stats)
-    report["rows_dated_on_or_after_snapshot"] = future_rows
     report["duplicate_views_merged"] = merger.merged_views
     report["matches"] = len(table)
     return table, report
@@ -250,12 +269,13 @@ def load_all(root: Path, start: date, end: date) -> tuple[pd.DataFrame, dict]:
 
 def main() -> int:
     root = repo_dir()
+    commit = require_commit(root, PINNED_VRS_COMMIT)
     table, report = load_all(root, WINDOW_START, DATA_CUTOFF)
     MATCHES_PATH.parent.mkdir(parents=True, exist_ok=True)
     table.to_parquet(MATCHES_PATH, index=False)
 
     rated = table.dropna(subset=["points_a", "points_b"])
-    print(f"VRS commit {repo_commit(root)}")
+    print(f"VRS commit {commit}")
     for key, value in report.items():
         print(f"{key}: {value}")
     print(f"período: {table['date'].min():%Y-%m-%d} a {table['date'].max():%Y-%m-%d}")

@@ -13,8 +13,12 @@ from dataclasses import dataclass
 from datetime import date
 
 SEEDING_SNAPSHOT = date(2026, 11, 2)
-# Início do Stage 1 segundo a imprensa; dados a partir daqui ficam fora da calibração.
-DATA_CUTOFF = date(2026, 11, 24)
+# Corte EXCLUSIVO da calibração. O VRS grava datas no fuso America/Los_Angeles
+# (``model/report.js`` do repositório): partidas de 24/11 em Singapura podem aparecer
+# como 23/11, então o dia 23 também fica de fora.
+DATA_CUTOFF = date(2026, 11, 23)
+# Commit do clone do VRS usado no modelo congelado (snapshot de 02/11/2026).
+PINNED_VRS_COMMIT = "f8c55f250fdef796d708aa32814587932154fa04"
 
 
 @dataclass(frozen=True)

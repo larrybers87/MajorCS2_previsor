@@ -13,9 +13,16 @@ from pathlib import Path
 
 import pandas as pd
 
-from sim.singapore2026 import ENTRANTS, SEEDING_SNAPSHOT
+from sim.singapore2026 import ENTRANTS, PINNED_VRS_COMMIT, SEEDING_SNAPSHOT
 
-from .vrs import PROJECT_ROOT, REGIONS, Standing, parse_standings, repo_commit, repo_dir
+from .vrs import (
+    PROJECT_ROOT,
+    REGIONS,
+    Standing,
+    parse_standings,
+    repo_dir,
+    require_commit,
+)
 
 SEEDS_PATH = PROJECT_ROOT / "data" / "processed" / "seeds_singapore.csv"
 
@@ -98,10 +105,11 @@ def load_seeds(path: Path = SEEDS_PATH) -> pd.DataFrame:
 
 def main() -> int:
     root = repo_dir()
+    commit = require_commit(root, PINNED_VRS_COMMIT)
     table = build_seeds(root)
     SEEDS_PATH.parent.mkdir(parents=True, exist_ok=True)
     table.to_csv(SEEDS_PATH, index=False, encoding="utf-8")
-    print(f"VRS commit {repo_commit(root)}, snapshot {SEEDING_SNAPSHOT}")
+    print(f"VRS commit {commit}, snapshot {SEEDING_SNAPSHOT}")
     columns = ["pre_event_seed", "name", "region", "vrs_points", "stage", "stage_seed"]
     print(table[columns].to_string(index=False))
     issues = invitation_order_issues(table, root)

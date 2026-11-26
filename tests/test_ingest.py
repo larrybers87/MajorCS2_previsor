@@ -5,7 +5,14 @@ from datetime import date
 import pytest
 
 from ingest.vrs import Standing, list_snapshots, parse_detail, parse_standings
-from ingest.vrs_matches import MatchMerger, RatingBook, build_table, matches_in_snapshot
+from ingest.vrs_matches import (
+    MatchMerger,
+    RatingBook,
+    RawMatch,
+    build_table,
+    load_all,
+    matches_in_snapshot,
+)
 from sim.singapore2026 import ENTRANTS, canonical_name
 
 STANDINGS = """### Standings as of 2026_01_05<br />
@@ -122,13 +129,43 @@ def test_roster_identity_needs_three_players():
     assert book.lookup(day, "alpha", frozenset())[1] == "name"
 
 
-def test_table_orientation_does_not_depend_on_result(repo):
-    matches, _ = matches_in_snapshot(read_rows(repo), date(2026, 1, 5))
-    book = RatingBook({date(2025, 12, 1): parse_standings(list_snapshots(repo)[0].path)})
-    table = build_table(matches, book)
-    assert (table["team_a"] < table["team_b"]).all()
-    row = table[table["team_a"] == "Alpha"].iloc[0]
-    assert bool(row["team_a_won"]) and row["points_a"] == 1900 and row["points_b"] == 1500
+@pytest.mark.parametrize("winner_is_alpha", [True, False])
+def test_table_orientation_does_not_depend_on_result(winner_is_alpha):
+    winner, loser = ("Alpha", "Beta") if winner_is_alpha else ("Beta", "Alpha")
+    match = RawMatch(date(2026, 1, 3), winner, loser, frozenset(), frozenset(), False,
+                     date(2026, 1, 5))  # fmt: skip
+    rows = [standing(1, 1900, "Alpha", "a1 a2 a3"), standing(2, 1500, "Beta", "b1 b2 b3")]
+    row = build_table([match], RatingBook({date(2025, 12, 1): rows})).iloc[0]
+    assert (row["team_a"], row["team_b"]) == ("Alpha", "Beta")
+    assert bool(row["team_a_won"]) is winner_is_alpha
+    assert (row["points_a"], row["points_b"]) == (1900, 1500)
+
+
+def test_table_takes_points_from_the_earlier_snapshot():
+    match = RawMatch(date(2026, 2, 2), "Alpha", "Beta", frozenset(), frozenset(), False,
+                     date(2026, 3, 2))  # fmt: skip
+
+    def rows(points):
+        return [standing(1, points, "Alpha", "a1"), standing(2, 900, "Beta", "b1")]
+
+    book = RatingBook({date(2026, 1, 5): rows(1000), date(2026, 2, 2): rows(2000)})
+    assert build_table([match], book).iloc[0]["points_a"] == 1000
+
+
+def test_load_all_applies_the_cutoff_to_rows_and_snapshots(repo):
+    table, report = load_all(repo, date(2026, 1, 1), date(2026, 1, 6))
+    assert len(table) == 2 and report["snapshots"] == 1
+    # Corte antes da publicação: o snapshot não é lido, mesmo tendo partidas anteriores.
+    with pytest.raises(ValueError):
+        load_all(repo, date(2026, 1, 1), date(2026, 1, 5))
+
+
+def test_load_all_rejects_rows_dated_after_the_snapshot(repo):
+    path = repo / "invitation" / "2026" / "details" / "2026_01_05" / "0001--alpha.md"
+    path.write_text(path.read_text(encoding="utf-8").replace("2026-01-03", "2026-01-06"),
+                    encoding="utf-8")  # fmt: skip
+    with pytest.raises(ValueError, match="data posterior"):
+        load_all(repo, date(2026, 1, 1), date(2026, 2, 1))
 
 
 def test_entrants_and_aliases():
