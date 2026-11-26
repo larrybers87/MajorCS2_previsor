@@ -1,6 +1,7 @@
 # Dados brutos e processados (nunca commitar)
 data/raw/
 data/processed/
+data/manual/
 *.parquet
 *.sqlite
 *.sqlite3

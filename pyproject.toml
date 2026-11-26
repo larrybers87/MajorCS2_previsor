@@ -7,7 +7,10 @@ name = "majorcs2-previsor"
 version = "0.1.0"
 description = "Previsor do PGL Major Singapore 2026 de CS2"
 requires-python = ">=3.11"
-dependencies = ["numpy"]
+dependencies = ["numpy", "pandas", "pyarrow"]
+
+[project.scripts]
+predict_stage2 = "sim.predict_stage2:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]
