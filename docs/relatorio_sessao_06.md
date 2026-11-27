@@ -43,6 +43,11 @@ A pasta registra `git_uncommitted_code: true` (o código da comparação ainda n
 commitado). Entradas: `matches.parquet` SHA-256 `9439d9ba...bcd2`, `b1_params.json`
 `720ffff6...c549`.
 
+**Atualização:** depois do commit `d9e5a49`, a pasta foi regerada
+(`predictions/v3_stage1/20261127T165555Z`, `git_uncommitted_code: false`), com
+`matches.csv`, `teams.csv`, `comparison.csv`, `summary.md` e `model_params.json` idênticos
+e as mesmas entradas. A pasta anterior foi mantida.
+
 ### Variantes de decaimento ([tabela completa](b1_decaimento_desenvolvimento.md))
 Só desenvolvimento (2025-09 a 2026-05, 2877 partidas); a escolhida foi reproduzida.
 

@@ -13,10 +13,12 @@ oficial do Stage 3. Fontes em [relatorio_sessao_05.md](relatorio_sessao_05.md), 
 Nova tentativa na página da PGL falhou ([relatorio_sessao_06.md](relatorio_sessao_06.md),
 item 6). A troca é uma linha: `ACTIVE_FORMAT` em `src/sim/format_config.py`.
 
-### D39 — B1 no Stage 1 já conhecido antes da checagem de desastre
-A pedido, o V3 de 27/11 calculou o B1 nas 33 partidas do Stage 1 (retrospectivo). Elas
-fazem parte da checagem de desastre. A regra pré-registrada não mudou e a média 50/50 não
-foi calculada. **Decidir** se isso vira emenda 3 (só registro de conhecimento).
+Registro por fonte em [formato_stage3_playoffs.md](formato_stage3_playoffs.md): **não
+confirmado oficialmente**; 3º lugar em Bo3 é **hipótese**.
+
+### D42 — Modelo dos playoffs
+Não coberto pelo pré-registro do Stage 3. **Decidir** antes de preencher a previsão
+([esqueleto](modelo_previsao_stage3.md)), junto com os substitutos de Vitality e Legacy.
 
 ### D40 — `claude/regras-verificadas.md` ausente
 Citada no pedido; não está no repositório e não foi fornecida.
@@ -88,6 +90,8 @@ evento) segue sem solução: o VRS não informa o evento.
 - **D37:** Larry confirmou os placares da rodada 5 e PARIVISION 9-13 FlyQuest (HLTV,
   conferido por ele); o quadro da Wikipedia (6-13) está errado.
 - **D38:** V3 retrospectivo com as 33 partidas rodado a pedido.
+- **D39:** registrado em [adendo_preregistro_stage1.md](adendo_preregistro_stage1.md); a
+  regra do Stage 3 não muda.
 - **D17:** primeiro jogo do Stage 2 em 28/11, 04:00 UTC; Bo1/Bo3 confirmados pelo
   calendário (compatível com a engine).
 - **D24:** GRID descartado; LiquipediaDB opcional, a cargo do Larry; nenhuma coleta nova.

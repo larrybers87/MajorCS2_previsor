@@ -134,6 +134,7 @@ Testes em `tests/test_playoffs.py`. O formato vem de `src/sim/format_config.py`
 | Todas as partidas Bo3 | VERIFICADO (L211) | "All matches are best of three" |
 | Final em Bo5 | **Não consta no RB** (contradiz L211) | dúvida D2 |
 | Disputa de 3º lugar | NÃO COBERTO | a tabela de Austin tem dois "3rd" (L611-612); dúvida D3 |
+| 3º lugar em **Bo3** | **HIPÓTESE** (só fonte secundária; PGL não confirmada) | [formato_stage3_playoffs.md](formato_stage3_playoffs.md) |
 
 ## 6. Ranking final do Major — VERIFICADO ("Final Rankings", L594-604)
 Ordem: posição nos playoffs; cartel S3; Difficulty S3; cartel S2; Difficulty S2; cartel
