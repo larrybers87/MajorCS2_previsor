@@ -13,15 +13,17 @@ from pathlib import Path
 
 import pandas as pd
 
-from sim.singapore2026 import ENTRANTS, PINNED_VRS_COMMIT, SEEDING_SNAPSHOT
+from sim.singapore2026 import ENTRANTS, PINNED_VRS_COMMIT, ROSTERS, SEEDING_SNAPSHOT
 
 from .vrs import (
+    MIN_SHARED_PLAYERS,
     PROJECT_ROOT,
     REGIONS,
     Standing,
     parse_standings,
     repo_dir,
     require_commit,
+    roster_key,
 )
 
 SEEDS_PATH = PROJECT_ROOT / "data" / "processed" / "seeds_singapore.csv"
@@ -36,10 +38,23 @@ def _standings(root: Path, scope: str) -> list[Standing]:
     return parse_standings(_snapshot_folder(root) / name)
 
 
+def find_by_roster(rows: list[Standing], roster: tuple[str, ...]) -> Standing:
+    """Linha do VRS com o maior número de jogadores em comum (mínimo 3), sem ambiguidade."""
+    wanted = roster_key(roster)
+    shared = [(len(wanted & roster_key(row.roster)), row) for row in rows]
+    best = max((n for n, _ in shared), default=0)
+    if best < MIN_SHARED_PLAYERS:
+        raise ValueError(f"nenhum roster do VRS compartilha 3 jogadores com {roster}")
+    found = [row for n, row in shared if n == best]
+    if len(found) > 1:
+        raise ValueError(f"elenco ambíguo no VRS: {roster} casa com {[r.name for r in found]}")
+    return found[0]
+
+
 def build_seeds(root: Path) -> pd.DataFrame:
     """Tabela dos 32 times: nome, região, pontos, seed pré-evento e seed no stage.
 
-    Quando há dois rosters com o mesmo nome, usa o de melhor posição global.
+    Cada participante é localizado no VRS pelo elenco (``ROSTERS``).
     ``stage_seed`` é a ordem relativa do seed pré-evento entre os que ENTRAM naquele
     stage (Stage 1: seeds 1-16, hipótese H4; Stages 2 e 3: seeds 1-8 dos convidados).
     """
@@ -51,10 +66,7 @@ def build_seeds(root: Path) -> pd.DataFrame:
 
     records = []
     for entrant in ENTRANTS:
-        matches = [row for row in global_rows if row.name == entrant.vrs_name]
-        if not matches:
-            raise ValueError(f"{entrant.vrs_name!r} não está no VRS de {SEEDING_SNAPSHOT}")
-        row = min(matches, key=lambda r: r.rank)
+        row = find_by_roster(global_rows, ROSTERS[entrant.name])
         region, region_rank = region_of[(row.name, row.roster)]
         records.append(
             {
@@ -66,7 +78,6 @@ def build_seeds(root: Path) -> pd.DataFrame:
                 "stage": entrant.stage,
                 "vrs_name": row.name,
                 "roster": ", ".join(row.roster),
-                "vrs_name_is_hypothesis": entrant.vrs_name_is_hypothesis,
             }
         )
     table = pd.DataFrame(records).sort_values("vrs_global_rank", ignore_index=True)

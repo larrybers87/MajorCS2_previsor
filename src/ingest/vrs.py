@@ -18,6 +18,7 @@ DEFAULT_REPO_DIR = PROJECT_ROOT.parent / "_external" / "counter-strike_regional_
 REGIONS = ("europe", "americas", "asia")
 # TOR §1.1: a pasta ``invitation`` é a versão relevante; ``live`` só acrescenta datas.
 FLAVORS = ("invitation", "live")
+MIN_SHARED_PLAYERS = 3  # um roster é o mesmo com 3 jogadores em comum (TOR §3.2.5 a)
 
 _STANDINGS_NAME = re.compile(r"standings_global_(\d{4})_(\d{2})_(\d{2})\.md$")
 
@@ -97,6 +98,10 @@ def list_snapshots(root: Path) -> list[Snapshot]:
             published = date(*map(int, match.groups()))
             found.setdefault(published, Snapshot(published, flavor, path))
     return [found[key] for key in sorted(found)]
+
+
+def roster_key(roster: tuple[str, ...]) -> frozenset[str]:
+    return frozenset(player.casefold() for player in roster)
 
 
 def _cells(line: str) -> list[str]:

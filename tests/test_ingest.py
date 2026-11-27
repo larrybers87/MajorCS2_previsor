@@ -4,6 +4,7 @@ from datetime import date
 
 import pytest
 
+from ingest.seeds import find_by_roster
 from ingest.vrs import Standing, list_snapshots, parse_detail, parse_standings
 from ingest.vrs_matches import (
     MatchMerger,
@@ -13,7 +14,7 @@ from ingest.vrs_matches import (
     load_all,
     matches_in_snapshot,
 )
-from sim.singapore2026 import ENTRANTS, canonical_name
+from sim.singapore2026 import ENTRANTS, ROSTERS, canonical_name
 
 STANDINGS = """### Standings as of 2026_01_05<br />
 
@@ -166,6 +167,26 @@ def test_load_all_rejects_rows_dated_after_the_snapshot(repo):
                     encoding="utf-8")  # fmt: skip
     with pytest.raises(ValueError, match="data posterior"):
         load_all(repo, date(2026, 1, 1), date(2026, 2, 1))
+
+
+def test_team_is_found_by_roster_not_by_name():
+    rows = [
+        standing(12, 1598, "1win", "ArtFr0st Ax1Le BELCHONOKK fame nafany"),
+        standing(318, 530, "the ONE", "dobo FELSADIA grizzly Kamui Wexde"),
+    ]
+    assert find_by_roster(rows, ROSTERS["THE ONE"]).name == "1win"
+    # Três jogadores bastam (substitutos); dois não.
+    assert find_by_roster(rows, ("artfr0st", "AX1LE", "fame", "x", "y")).rank == 12
+    with pytest.raises(ValueError, match="nenhum roster"):
+        find_by_roster(rows, ("fame", "nafany", "x", "y", "z"))
+    with pytest.raises(ValueError, match="ambíguo"):
+        find_by_roster([rows[0], rows[0]], ROSTERS["THE ONE"])
+
+
+def test_every_entrant_has_a_distinct_roster():
+    assert set(ROSTERS) == {e.name for e in ENTRANTS}
+    players = [p.casefold() for roster in ROSTERS.values() for p in roster]
+    assert len(players) == len(set(players)) == 160
 
 
 def test_entrants_and_aliases():

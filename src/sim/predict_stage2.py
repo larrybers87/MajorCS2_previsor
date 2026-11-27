@@ -122,7 +122,6 @@ def _summary_header(metadata: dict, params: dict, mode: str) -> list[str]:
         "- Limites: ignora forma recente, mapas, elencos e resultados deste Major (o B0 não "
         "atualiza ratings); H10 (formato das partidas históricas) e as hipóteses de regras "
         "estão em `docs/duvidas_abertas.md`.",
-        "- Os nomes THE ONE = 1win e GOSH = BC.Game no VRS são hipótese (D15).",
         "",
     ]
 

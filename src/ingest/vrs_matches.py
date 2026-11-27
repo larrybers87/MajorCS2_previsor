@@ -25,6 +25,7 @@ import pandas as pd
 from sim.singapore2026 import DATA_CUTOFF, PINNED_VRS_COMMIT
 
 from .vrs import (
+    MIN_SHARED_PLAYERS,
     PROJECT_ROOT,
     DetailMatch,
     Snapshot,
@@ -34,20 +35,16 @@ from .vrs import (
     parse_standings,
     repo_dir,
     require_commit,
+    roster_key,
 )
 
 MATCHES_PATH = PROJECT_ROOT / "data" / "processed" / "matches.parquet"
 WINDOW_START = date(2025, 6, 1)  # decisão: dados desde o Major de Austin
-MIN_SHARED_PLAYERS = 3  # um roster é o mesmo com 3 jogadores em comum (TOR §3.2.5 a)
 
 
 def name_key(name: str) -> str:
     """Normalização de nomes: só espaços nas pontas e maiúsculas/minúsculas."""
     return name.strip().casefold()
-
-
-def roster_key(roster: tuple[str, ...]) -> frozenset[str]:
-    return frozenset(player.casefold() for player in roster)
 
 
 @dataclass
