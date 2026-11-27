@@ -32,7 +32,9 @@ from .common import (
     new_output_dir,
     percent,
     run_metadata,
+    write_csv,
     write_json,
+    write_text,
 )
 from .format_config import DEFAULT_FORMAT
 from .results import ResultRow, build_state, file_sha256, format_notes, pairing_report, read_results
@@ -233,9 +235,9 @@ def main(argv: list[str] | None = None) -> int:
     ]
     out = new_output_dir(args.out, metadata)
     metadata |= freeze_inputs(out, args.seeds_file, args.params_file)
-    matches.to_csv(out / "matches.csv", index=False, encoding="utf-8")
-    teams.to_csv(out / "teams.csv", index=False, encoding="utf-8")
-    (out / "summary.md").write_text("\n".join(lines), encoding="utf-8")
+    write_csv(out / "matches.csv", matches)
+    write_csv(out / "teams.csv", teams)
+    write_text(out / "summary.md", "\n".join(lines))
     write_json(out / "meta.json", metadata)
     print("\n".join(lines))
     print(f"Gravado em {out}")

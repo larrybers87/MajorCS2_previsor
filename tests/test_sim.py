@@ -43,7 +43,16 @@ def files(tmp_path):
         ),
         encoding="utf-8",
     )  # fmt: skip
-    return {"seeds": seeds, "params": params, "dir": tmp_path}
+    model = tmp_path / "model.json"
+    model.write_text(
+        json.dumps(
+            {"train_last": "2026-11-01", "b0_config": {"transform": "points"},
+             "rule": {"mode": "faixa", "ci": [0.0, 1.0],
+                      "variants": [{"w": 0.0, "beta": 0.15}, {"w": 1.0, "beta": 0.23}]}}
+        ),
+        encoding="utf-8",
+    )  # fmt: skip
+    return {"seeds": seeds, "params": params, "model": model, "dir": tmp_path}
 
 
 def play_stage(state, rounds=5, seed=0):
@@ -184,7 +193,7 @@ def run_predict(files, *args):
     out = files["dir"] / "out"
     code = predict_stage2.main(
         [*args, "--sims", "3000", "--out", str(out), "--seeds-file", str(files["seeds"]),
-         "--params-file", str(files["params"])]
+         "--params-file", str(files["model"])]
     )  # fmt: skip
     assert code == 0
     return max(out.iterdir(), key=lambda p: p.stat().st_mtime_ns)
@@ -224,17 +233,26 @@ def test_predict_stage2_conditioned(files):
     folder = run_predict(files, "--conditioned", "--stage1", str(csv_path))
     table = pd.read_csv(folder / "probabilities.csv")
     assert len(table) == 24
+    # Número principal = média dos extremos de w.
+    mean = (table["P(avançar) w=0"] + table["P(avançar) w=1"]) / 2
+    np.testing.assert_allclose(table["P(avançar)"], mean, atol=2e-6)
+    assert (table["P(avançar) w=0"] != table["P(avançar) w=1"]).any()
+    pending = pd.read_csv(folder / "stage1_next_round.csv")
+    assert set(pending["rodada"]) == {4} and len(pending) == 6
+    # Saídas em LF e hash da cópia dos parâmetros reproduzível.
+    for path in folder.iterdir():
+        assert b"\r\n" not in path.read_bytes(), path.name
     assert table["P(participa)"].sum() == pytest.approx(16.0, abs=1e-4)
     assert table["P(avançar)"].sum() == pytest.approx(8.0, abs=1e-4)
     assert (table["P(avançar)"] <= table["P(participa)"] + 1e-9).all()
 
 
 def test_params_trained_during_the_major_are_rejected(files, capsys):
-    params = json.loads(files["params"].read_text(encoding="utf-8"))
-    files["params"].write_text(json.dumps(params | {"train_last": "2026-11-23"}), encoding="utf-8")
+    model = json.loads(files["model"].read_text(encoding="utf-8"))
+    files["model"].write_text(json.dumps(model | {"train_last": "2026-11-23"}), encoding="utf-8")
     code = predict_stage2.main(
         ["--conditioned", "--sims", "10", "--out", str(files["dir"] / "out"),
-         "--seeds-file", str(files["seeds"]), "--params-file", str(files["params"])]
+         "--seeds-file", str(files["seeds"]), "--params-file", str(files["model"])]
     )  # fmt: skip
     assert code == 1 and "período do Major" in capsys.readouterr().out
 
