@@ -41,8 +41,11 @@ git push origin main
 ```
 8. Confirmar o horário (tem de ser anterior a `2026-11-28T04:00:00Z`):
 ```
-gh api repos/larrybers87/MajorCS2_previsor/activity --jq ".[0].timestamp"
+git rev-parse --short main
+gh api repos/larrybers87/MajorCS2_previsor/activity --jq ".[0] | .timestamp, .after[0:7]"
 ```
+O commit mostrado nas duas saídas tem de ser o mesmo. A lista do GitHub pode demorar
+alguns segundos: se aparecer o push anterior, repita.
 
 ## Cuidados
 - **A última pasta de `predictions/stage2/` enviada antes do prazo é a oficial** (D28).
