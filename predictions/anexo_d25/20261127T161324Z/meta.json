@@ -1,0 +1,76 @@
+{
+  "generated_at_utc": "2026-11-27T16:13:24+00:00",
+  "generated_at_local": "2026-11-27T13:13:24-03:00",
+  "git_commit": "d39cd1a42bafc9226d4468077547f49058a7a9f7",
+  "git_uncommitted_code": false,
+  "kind": "anexo_d25",
+  "official": false,
+  "amendment": 1,
+  "deltas": [
+    0,
+    -50,
+    -100
+  ],
+  "scenarios": [
+    [
+      0,
+      0
+    ],
+    [
+      0,
+      -50
+    ],
+    [
+      0,
+      -100
+    ],
+    [
+      -50,
+      0
+    ],
+    [
+      -50,
+      -50
+    ],
+    [
+      -50,
+      -100
+    ],
+    [
+      -100,
+      0
+    ],
+    [
+      -100,
+      -50
+    ],
+    [
+      -100,
+      -100
+    ]
+  ],
+  "teams": [
+    "FUT",
+    "Astralis"
+  ],
+  "n_sims": 200000,
+  "rng_seed": 20261127,
+  "variants": [
+    {
+      "w": 0.0,
+      "beta": 0.15576013722622684
+    },
+    {
+      "w": 1.0,
+      "beta": 0.2360804759216661
+    }
+  ],
+  "conditioned": false,
+  "stage1_csv_sha256": "2f402124d252d06e4c73e94dc766d13db729cabf82f57d580143b3dbf51d81a7",
+  "stage2_csv_sha256": null,
+  "checked_against": "20261127T161221Z",
+  "check_max_difference": 5.000000000143778e-07,
+  "rule_notes": [],
+  "seeds_file_sha256": "e6670b19c7fa0f68d75f5aed40e64c071cb79d7928c97d30b20ba0b0d28a9cb6",
+  "params_file_sha256": "c2051462994d7ceb0f490e1a183c1f98557cff23c74327109c838b2ebfd6e03a"
+}

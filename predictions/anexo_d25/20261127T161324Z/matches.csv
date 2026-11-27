@@ -1,0 +1,19 @@
+delta_fut,delta_astralis,time,adversario,P(confronto),best_of,P(time vence)
+0,0,FUT,FlyQuest,1.000000,1,0.686684
+0,0,Astralis,Imperial,1.000000,1,0.580511
+0,-50,FUT,FlyQuest,1.000000,1,0.686684
+0,-50,Astralis,Imperial,1.000000,1,0.556543
+0,-100,FUT,FlyQuest,1.000000,1,0.686684
+0,-100,Astralis,Imperial,1.000000,1,0.532276
+-50,0,FUT,FlyQuest,1.000000,1,0.665581
+-50,0,Astralis,Imperial,1.000000,1,0.580511
+-50,-50,FUT,FlyQuest,1.000000,1,0.665581
+-50,-50,Astralis,Imperial,1.000000,1,0.556543
+-50,-100,FUT,FlyQuest,1.000000,1,0.665581
+-50,-100,Astralis,Imperial,1.000000,1,0.532276
+-100,0,FUT,FlyQuest,1.000000,1,0.643711
+-100,0,Astralis,Imperial,1.000000,1,0.580511
+-100,-50,FUT,FlyQuest,1.000000,1,0.643711
+-100,-50,Astralis,Imperial,1.000000,1,0.556543
+-100,-100,FUT,FlyQuest,1.000000,1,0.643711
+-100,-100,Astralis,Imperial,1.000000,1,0.532276
