@@ -6,18 +6,10 @@ Fontes de imprensa são **secundárias**.
 
 ## Antes de 02/12 (Stage 3)
 
-### D33 — "Até a véspera de cada rodada"
-O código congelado do B1 trata cada rodada como um dia: a rodada r vê todas as anteriores,
-mesmo as do mesmo dia do calendário. "Véspera" pode excluir a rodada anterior do mesmo
-dia. Adotada a leitura do pré-registro original (todas as anteriores) salvo resposta
-([emenda](preregistro_stage3_emenda_01.md)).
-
-## Sem prazo próximo
-
-### D34 — Comparação do log score do cartel
-O bootstrap pareado por partidas não se aplica a uma métrica por time. Proposta:
-diferença pontual e teste de consistência
-([emenda](avaliacao_stage2_emenda_01.md)). Convém decidir **antes de 04:00 UTC de 28/11**.
+### D35 — B1 ao vivo com rodada pela metade
+O código congelado aplica qualquer partida decidida que receber. Para cumprir a D33, o
+chamador passará só as rodadas anteriores, sem alterar `b1_ratings.py`
+([emenda 2](preregistro_stage3_emenda_02.md)). **Confirmar** que isso basta.
 
 ## Modelo e dados
 
@@ -82,3 +74,4 @@ evento) segue sem solução: o VRS não informa o evento.
 - **D27:** média das probabilidades de w=0 e w=1.
 - **D28:** vale a última previsão enviada antes do prazo.
 - **D29-D32:** respondidas em 26/11 21:45 (emendas à avaliação, ao Stage 3 e ao anexo).
+- **D33, D34:** respondidas em 26/11 22:00 (emendas 2).

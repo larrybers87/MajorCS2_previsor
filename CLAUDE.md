@@ -85,11 +85,12 @@ predict_stage2 --conditioned [--stage1 <CSV parcial>]
 - Modelo do Stage 2: **B0** com a regra de formato (faixa w=0/w=1); o B1 não atingiu o
   critério pré-registrado e fica para o Stage 3.
 - Previsão oficial do Stage 2: a última enviada antes de 28/11 04:00 UTC
-  (`docs/avaliacao_stage2.md` + emenda 1; roteiro em `docs/roteiro_sexta.md`). Anexo D25
-  (grade 3x3, emenda 1) não é oficial.
+  (`docs/avaliacao_stage2.md` + emendas; roteiro em `docs/roteiro_sexta.md`). Anexo D25
+  (grade 3x3, emendas) não é oficial.
 - Stage 3: média 50/50 de B0 e B1 com checagem de desastre
-  (`docs/preregistro_stage3.md` + **emenda 1**, que substitui a regra de 0,70); não usar o
+  (`docs/preregistro_stage3.md` + **emendas**; a 1 substitui a regra de 0,70); não usar o
   teste já visto como argumento. Pré-registros se mudam só por emenda em arquivo novo.
+- B1 (D33): para prever uma rodada, passar a `b1_ratings` só as rodadas anteriores.
 - Dados a partir de 2025-06-01 com decaimento temporal (half-life a testar a partir do
   B1); dashboard local; aceite de modelo por log loss no backtest; calibração
   obrigatória; sem rede neural no escopo inicial.

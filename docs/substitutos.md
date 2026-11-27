@@ -13,9 +13,9 @@ e pela [Strafe (28/10)](https://www.strafe.com/news/read/astralis-bring-back-jab
 
 - **cmtry** foi contratado pela Astralis em outubro, mas **segue no elenco VRS da FUT**,
   porque o novo jogador da FUT, SunPayus, não tinha as 5 partidas em 10 necessárias.
-- Por isso a **FUT** usa **SunPayus** como substituto registrado. Em campo, ele é quem
-  substituiu cmtry no time desde outubro, e não um reserva chamado de última hora
-  (**leitura nossa** das fontes e do histórico).
+- Por isso a **FUT** usa **SunPayus** como substituto registrado. **ESPECULAÇÃO (leitura
+  nossa):** em campo, ele seria o sucessor de cmtry no time desde outubro, e não um reserva
+  de última hora.
 - A **Astralis** não pode inscrever cmtry; no elenco VRS dela está **jabbi**, que, segundo
   fontes citadas pela Strafe, não deve jogar. Entra **Anlelele**, emprestado pela Sashi.
   A Strafe diz que Anlelele substitui **cmtry**; a gambling.com e a lista registrada dizem
@@ -26,9 +26,11 @@ Histórico do VRS desde 01/09 (contagem nossa): cmtry, 4 partidas pela Astralis 
 27/10); SunPayus, 4 pela FUT (24/10 a 29/10), as 4 últimas do núcleo; jabbi, 16 pela
 Astralis, incluindo as 3 últimas (28 e 29/10); Anlelele, só pela Sashi.
 
-**Consequência para o anexo D25:** "reduzir pontos porque joga um substituto" tem sentido
-mais claro para a Astralis (jogador emprestado, sem partidas com o time) do que para a FUT
-(escalação que já vinha jogando). O modelo não foi alterado.
+**O que se pode afirmar para o anexo D25:** nos dois casos muda 1 de 5 jogadores em relação
+ao núcleo do VRS; a FUT tem 4 partidas de ajuste e a Astralis, 0; a qualidade dos
+jogadores é desconhecida. **ESPECULAÇÃO:** que a redução de pontos faça mais sentido para
+uma equipe que para a outra. Nenhuma célula da grade é tratada como a mais plausível
+([emenda 2](anexo_d25_emenda_02.md)). O modelo não foi alterado.
 
 ## Quem começa com o substituto registrado
 
@@ -80,7 +82,7 @@ recusaram.
 - **Quantas trocas:** gambling.com fala em **quatro** (Legacy, Vitality, Astralis, FUT) e
   a frase sobre a 9z está truncada, com meyern listado e history como substituto. Shane
   the Gamer, Wikipedia e SkinsMonkey falam em **cinco**, incluindo history por meyern na
-  9z (já eliminada).
+  9z (já eliminada). A diferença entre quatro e cinco é exatamente essa troca da 9z.
 - **Quem Anlelele substitui:** jabbi (gambling.com) x cmtry (Strafe); ver acima.
 - **Partidas de SunPayus:** três (Strafe 28/10, até aquela data) e quatro (Strafe 08/11);
   o VRS mostra quatro.

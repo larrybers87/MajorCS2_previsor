@@ -120,6 +120,20 @@ A previsão antecipada não mudou (mesmos blobs git). SHA-256, nas duas formas:
   [Emenda 1 do anexo](anexo_d25_emenda_01.md).
 - **Horários da rodada 5 do Stage 1:** sexta 27/11 às **03:00, 05:30 e 08:00 BRT**.
 
+## 26/11/2026, 22:00 BRT (respostas)
+
+- **Substitutos:** concordância parcial. Fatos: 1 de 5 jogadores muda em cada caso; FUT
+  tem 4 partidas de ajuste, Astralis 0; qualidade desconhecida. A leitura de que são casos
+  diferentes é **especulação**. Nenhuma célula "mais plausível" da grade. 4 x 5
+  substituições difere pela 9z/history. [Emenda 2 do anexo](anexo_d25_emenda_02.md).
+- **D34:** suficiente. Cartel = soma dos log scores marginais; referências pelo mesmo
+  simulador; diferença pontual e percentil; não mede qualidade do modelo.
+  [Emenda 2 da avaliação](avaliacao_stage2_emenda_02.md).
+- **D33:** corte no início do primeiro jogo da rodada; tudo que terminou antes entra, jogos
+  da mesma rodada não. [Emenda 2 do Stage 3](preregistro_stage3_emenda_02.md).
+- **Bootstraps:** mínimo de 10.000 réplicas, semente registrada em emenda, fixadas antes de
+  ver dados.
+
 ## Anteriores
 - Escopo temporal: a partir de 2025-06-01 (`claude/fontes-de-dados.md`).
 - Dashboard local por enquanto.

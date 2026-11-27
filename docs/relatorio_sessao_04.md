@@ -127,3 +127,22 @@ a FUT. A gambling.com conta quatro substituições, as outras fontes cinco.
 
 **Parado aqui, aguardando o relatório de sexta.**
 
+---
+
+## Adendo 2: respostas de 26/11 22:00 BRT
+
+- **Três emendas 2** em arquivos novos (originais e emendas 1 intactos):
+  [anexo](anexo_d25_emenda_02.md), [avaliação](avaliacao_stage2_emenda_02.md) e
+  [Stage 3](preregistro_stage3_emenda_02.md). Réplicas e sementes fixadas.
+- **Substitutos:** a leitura sobre FUT x Astralis passou a **especulação**.
+- **Dois pares de "-100":** células diferentes, não mudança de resultado. (-100, -100): FUT
+  63,5%, Astralis 44,3% (anexo original). (-100, 0): FUT 62,9%. (0, -100): Astralis
+  43,7%. A frase do adendo anterior juntou as duas últimas sem avisar; erro de redação meu.
+  Células iguais conferidas nos CSVs (diferença 0).
+- **Referência de P2:** a fronteira de dia do backtest é a regra "Sem informação do mesmo
+  dia" do protocolo; P2 trata da ordem das atualizações no dia. Registrado assim.
+- **D35 (nova, antes de 02/12):** o `b1_ratings` congelado inclui jogos da rodada em
+  andamento se recebê-los; a D33 será cumprida filtrando a entrada. Confirmar.
+
+Nenhum código foi alterado. **Parado aqui, aguardando o relatório de sexta.**
+
