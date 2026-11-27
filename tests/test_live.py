@@ -3,6 +3,7 @@
 Tudo com dados sintéticos em pastas temporárias; nada toca ``predictions/``.
 """
 
+import argparse
 import http.client
 import json
 import threading
@@ -12,13 +13,13 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from sim import predict_stage2, round_update
+from sim import export_site, predict_stage2, round_update
 from sim.export_site import latest_update, stage2_live
 from sim.format_config import DEFAULT_FORMAT
 from sim.live import Pick, apply_picks, full_round, official_model, stage_view
 from sim.results import ResultRow, build_state, read_results
 from sim.singapore2026 import ENTRANTS, ROSTERS
-from sim.site_server import Handler, parse_request, simulate
+from sim.site_server import Handler, Paths, Server, parse_request, simulate
 from sim.stages import entrants_by_seed, stage2_names, stage3_names
 from sim.wiki_check import compare_with_csv, parse_matches
 from swiss import apply_results, best_of, current_round, pair_round, records
@@ -329,7 +330,121 @@ def test_simulate_uses_real_results_or_starts_from_scratch(world):
     assert len(read_results(world["stage1_csv"])) == 33  # nada foi alterado em disco
 
 
+# ---------- site atualizado pela rotina ----------
+
+
+@pytest.fixture
+def no_stage1_evaluation(monkeypatch):
+    """A avaliação do Stage 1 usa pastas reais; com dados sintéticos, entra vazia."""
+    empty = {"retrospectivo": {"partidas": []}, "previo_r5": {"partidas": []}}
+    monkeypatch.setattr(export_site, "evaluate", lambda *args, **kwargs: empty)
+
+
+def site_data(folder):
+    text = (folder / "site_data.js").read_text(encoding="utf-8")
+    return json.loads(text.removeprefix("window.SITE_DATA = ").rstrip(";\n"))
+
+
+def test_only_a_real_run_touches_the_real_site(world):
+    parse = lambda **kw: argparse.Namespace(  # noqa: E731
+        **({"no_site": False, "site_dir": None, "stage2": round_update.STAGE2_CSV,
+            "out": round_update.PREDICTIONS_DIR / "stage2"} | kw)
+    )  # fmt: skip
+    assert round_update.site_target(parse()) == round_update.PROCESSED_DIR
+    assert round_update.site_target(parse(stage2=world["dir"] / "x.csv")) is None
+    assert round_update.site_target(parse(out=world["dir"])) is None
+    assert round_update.site_target(parse(site_dir=world["dir"])) == world["dir"]
+    assert round_update.site_target(parse(no_site=True, site_dir=world["dir"])) is None
+
+
+def test_round_update_refreshes_the_site(world, no_stage1_evaluation, capsys):
+    site = world["dir"] / "site"
+    code, _ = update(world, rows_of(play(world["base2"], 1)), "--site-dir", str(site))
+    assert code == 0 and "Site atualizado" in capsys.readouterr().out
+    live = site_data(site)["stage2_ao_vivo"]
+    assert (live["ultima_rodada"], live["rodada_pendente"]) == (1, 2)
+    first, second = live["rodadas_resumo"]
+    # Resultados reais da rodada 1 e o acerto dela, com a previsão oficial.
+    assert (first["jogadas"], first["total"], first["resumo"]["n"]) == (8, 8, 8)
+    assert first["previsao"]["origem"] == "oficial" and first["previsao"]["confrontos_iguais"]
+    assert all(m["vencedor"] and "previsao" in m for m in live["rodadas"][0])
+    # Confrontos da rodada 2, com a pasta que acabou de ser gravada.
+    assert (second["jogadas"], second["total"], second["resumo"]) == (0, 8, None)
+    assert second["previsao"]["origem"] == "atualizacao"
+    assert second["previsao"]["pasta"].startswith("round2/")
+    assert second["previsao"]["commit"] is None and second["previsao"]["confrontos_iguais"]
+    assert all(m["vencedor"] is None and "p_a" in m for m in live["rodadas"][1])
+
+    # Depois da rodada 2, o acerto dela é contado à parte.
+    update(world, rows_of(play(world["base2"], 2)), "--site-dir", str(site))
+    live = site_data(site)["stage2_ao_vivo"]
+    assert (live["ultima_rodada"], live["rodada_pendente"]) == (2, 3)
+    assert live["rodadas_resumo"][1]["resumo"]["n"] == 8
+    assert live["rodadas_resumo"][1]["previsao"]["pasta"].startswith("round2/")
+    assert live["resumo"]["n"] == 16
+
+
+def test_partial_round_prediction_does_not_count_as_the_round_prediction(
+    world, no_stage1_evaluation
+):
+    one = rows_of(play(world["base2"], 1))
+    partial = one + [r for r in rows_of(play(world["base2"], 2)) if r.round == 2][:1]
+    site = world["dir"] / "site"
+    update(world, partial, "--site-dir", str(site))
+    live = site_data(site)["stage2_ao_vivo"]
+    assert (live["ultima_rodada"], live["rodada_pendente"]) == (2, 2)
+    assert live["rodadas_resumo"][1]["previsao"] is None
+
+
+def test_site_failure_does_not_lose_the_update(world, monkeypatch, capsys):
+    def broken(*args, **kwargs):
+        raise ValueError("falha simulada")
+
+    monkeypatch.setattr(export_site, "evaluate", broken)
+    site = world["dir"] / "site"
+    code, out = update(world, rows_of(play(world["base2"], 1)), "--site-dir", str(site))
+    assert code == 0 and next((out / "round2").iterdir())
+    assert "NÃO foi atualizado: falha simulada" in capsys.readouterr().out
+    assert not (site / "site_data.js").exists()
+
+
+def test_version_changes_with_results_and_predictions(tmp_path):
+    csv_path, updates = tmp_path / "s.csv", tmp_path / "updates"
+    first = export_site.data_version(csv_path, csv_path, updates)
+    csv_path.write_text(HEADER, encoding="utf-8")
+    second = export_site.data_version(csv_path, csv_path, updates)
+    folder = updates / "round2" / "x"
+    folder.mkdir(parents=True)
+    (folder / "meta.json").write_text("{}", encoding="utf-8")
+    third = export_site.data_version(csv_path, csv_path, updates)
+    assert len({first, second, third}) == 3
+    assert export_site.data_version(csv_path, csv_path, updates) == third
+
+
 # ---------- servidor ----------
+
+
+def test_server_reports_the_version_of_its_own_inputs(tmp_path):
+    csv_path = tmp_path / "s2.csv"
+    paths = Paths(stage1=csv_path, stage2=csv_path, updates=tmp_path / "updates")
+    server = Server(("127.0.0.1", 0), Handler, paths)
+    threading.Thread(target=server.serve_forever, daemon=True).start()
+
+    def version():
+        connection = http.client.HTTPConnection("127.0.0.1", server.server_address[1], timeout=10)
+        try:
+            connection.request("GET", "/api/version")
+            return json.loads(connection.getresponse().read())["versao"]
+        finally:
+            connection.close()
+
+    try:
+        before = version()
+        csv_path.write_text(HEADER, encoding="utf-8")
+        assert version() != before
+    finally:
+        server.shutdown()
+        server.server_close()
 
 
 @pytest.mark.parametrize(

@@ -22,6 +22,7 @@ recente em ``predictions/stage2/round<N>/``.
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import shutil
 import subprocess
@@ -40,7 +41,7 @@ from swiss.rules import FINAL_RECORD_LABELS, N_ADVANCING
 from .common import MANUAL_DIR, PREDICTIONS_DIR, write_csv, write_text
 from .format_config import DEFAULT_FORMAT
 from .live import OfficialModel, apply_picks, official_model, stage_view
-from .official import OFFICIAL_DIR
+from .official import OFFICIAL_DIR, OFFICIAL_PUSH_UTC
 from .results import ResultRow, build_state, pairing_report, read_results
 from .stages import entrants_by_seed, stage2_names
 
@@ -260,6 +261,8 @@ def build(
     stage2_path: Path = STAGE2_CSV,
     updates_dir: Path = PREDICTIONS_DIR / "stage2",
 ) -> dict:
+    # Calculada antes de ler: uma mudança durante a leitura provoca nova atualização.
+    version = data_version(results_path, stage2_path, updates_dir)
     seeds = load_seeds(seeds_path)
     rows = read_results(results_path)
     stage1 = build_state(DEFAULT_FORMAT.stage_state(1, entrants_by_seed(seeds, 1)), rows)
@@ -273,8 +276,18 @@ def build(
     info = seeds.set_index("name")
     rows2 = read_results(stage2_path) if stage2_path.exists() else []
     live = stage2_live(seed_table["time"].tolist(), rows2, official_model(seeds, prediction))
-    live |= {"tem_csv": stage2_path.exists(), "atualizacao": latest_update(updates_dir)}
+    summaries = round_summaries(live, round_predictions(updates_dir, prediction))
+    live |= {
+        "tem_csv": stage2_path.exists(),
+        "atualizacao": latest_update(updates_dir),
+        "rodadas_resumo": summaries,
+        "ultima_rodada": max((s["rodada"] for s in summaries if s["jogadas"]), default=None),
+        "rodada_pendente": next(
+            (s["rodada"] for s in summaries if s["jogadas"] < s["total"]), None
+        ),
+    }
     return {
+        "versao": version,
         "gerado_em": datetime.now(timezone.utc).isoformat(timespec="seconds"),
         "cartoes": list(FINAL_RECORD_LABELS),
         "times": {
@@ -291,11 +304,106 @@ def build(
     }
 
 
-def write_site_data(data: dict, folder: Path) -> Path:
-    path = folder / "site_data.js"
+def _commit_or_none(path: Path) -> dict | None:
+    try:
+        return commit_info(path)
+    except (ValueError, subprocess.CalledProcessError):
+        return None
+
+
+def _pairs(path: Path) -> set[frozenset[str]]:
+    table = pd.read_csv(path)
+    return {frozenset(p) for p in zip(table["time_a"], table["time_b"])}
+
+
+def round_predictions(updates_dir: Path, official_dir: Path) -> dict[int, dict]:
+    """A previsão gravada para cada rodada do Stage 2.
+
+    Rodada 1: a oficial. Demais: a atualização gerada **sem nenhum resultado da própria
+    rodada**; entre várias, a commitada mais recente (senão, a mais recente). Isto não
+    prova que ela foi enviada antes do primeiro jogo: só o horário do push prova.
+    """
+    official = official_dir / "opening_round.csv"
+    found = {
+        1: {
+            "origem": "oficial",
+            "pasta": official_dir.name,
+            "gerado_em": None,
+            "commit": _commit_or_none(official),
+            "push": OFFICIAL_PUSH_UTC if official_dir.resolve() == OFFICIAL_DIR.resolve() else None,
+            "pares": _pairs(official),
+        }
+    }
+    candidates: dict[int, list[dict]] = {}
+    for meta_path in sorted(updates_dir.glob("round*/*/meta.json")):
+        meta = json.loads(meta_path.read_text(encoding="utf-8"))
+        if meta.get("kind") != "atualizacao_ao_vivo" or meta["decided_in_current_round"]:
+            continue
+        folder = meta_path.parent
+        candidates.setdefault(int(meta["round"]), []).append(
+            {
+                "origem": "atualizacao",
+                "pasta": f"{folder.parent.name}/{folder.name}",
+                "gerado_em": meta["generated_at_utc"],
+                "commit": _commit_or_none(folder / "pairings.csv"),
+                "push": None,
+                "pares": _pairs(folder / "pairings.csv"),
+            }
+        )
+    for number, entries in candidates.items():
+        committed = [e for e in entries if e["commit"]]
+        found[number] = max(committed or entries, key=lambda e: e["gerado_em"])
+    return found
+
+
+def round_summaries(view: dict, predictions: dict[int, dict]) -> list[dict]:
+    """Acerto de cada rodada e qual previsão existia para ela."""
+    out = []
+    for number, matches in enumerate(view["rodadas"], start=1):
+        played = [m["previsao"] for m in matches if "previsao" in m]
+        prediction = predictions.get(number)
+        if prediction is not None:
+            actual = {frozenset((m["a"], m["b"])) for m in matches}
+            prediction = {k: v for k, v in prediction.items() if k != "pares"} | {
+                "confrontos_iguais": prediction["pares"] == actual
+            }
+        out.append(
+            {
+                "rodada": number,
+                "jogadas": len(played),
+                "total": len(matches),
+                "resumo": summarize_matches(pd.DataFrame(played)) if played else None,
+                "previsao": prediction,
+            }
+        )
+    return out
+
+
+def data_version(stage1_path: Path, stage2_path: Path, updates_dir: Path) -> str:
+    """Assinatura das entradas; a página recarrega quando ela muda (modo servidor)."""
+    head = subprocess.run(
+        ["git", "-C", str(PROJECT_ROOT), "rev-parse", "HEAD"], capture_output=True, text=True
+    ).stdout.strip()
+    parts = [head]
+    for path in (stage1_path, stage2_path, *sorted(updates_dir.glob("*/*/meta.json"))):
+        if path.exists():
+            stat = path.stat()
+            parts.append(f"{path.resolve()}|{stat.st_mtime_ns}|{stat.st_size}")
+    return hashlib.sha256("\n".join(parts).encode("utf-8")).hexdigest()[:16]
+
+
+def site_script(data: dict) -> str:
     payload = json.dumps(data, ensure_ascii=False, allow_nan=False)
+    return f"window.SITE_DATA = {payload};\n"
+
+
+def write_site_data(data: dict, folder: Path) -> Path:
+    """Grava ``site_data.js`` de uma vez (a página nunca lê um arquivo pela metade)."""
+    path = folder / "site_data.js"
     folder.mkdir(parents=True, exist_ok=True)
-    write_text(path, f"window.SITE_DATA = {payload};\n")
+    temporary = folder / "site_data.js.tmp"
+    write_text(temporary, site_script(data))
+    temporary.replace(path)
     return path
 
 

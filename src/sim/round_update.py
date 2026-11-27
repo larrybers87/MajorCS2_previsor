@@ -8,7 +8,8 @@ Faz, nesta ordem: V2 (confrontos reais x engine), ratings do B1 só com rodadas 
 (D33), confrontos da próxima rodada, probabilidade por partida e Monte Carlo condicional
 com o **B0 da previsão oficial** (modelo do Stage 2), e grava uma pasta nova em
 ``predictions/stage2/round<N>/<carimbo>/``. **Não faz commit** e não altera a previsão
-oficial. O B1 não entra nas probabilidades: fica salvo para o Stage 3.
+oficial. O B1 não entra nas probabilidades: fica salvo para o Stage 3. Ao final atualiza
+os dados do site (``data/processed/site_data.js``).
 
 Se a rodada já tiver confrontos anunciados diferentes dos da engine, liste a rodada
 inteira no CSV, com placar vazio nas pendentes.
@@ -17,6 +18,7 @@ inteira no CSV, com placar vazio nas pendentes.
 from __future__ import annotations
 
 import argparse
+import subprocess
 from collections.abc import Sequence
 from pathlib import Path
 
@@ -42,6 +44,7 @@ from .common import (
     write_json,
     write_text,
 )
+from .export_site import PROCESSED_DIR, STAGE2_CSV, build, write_site_data
 from .format_config import DEFAULT_FORMAT
 from .live import OfficialModel, full_round, official_model
 from .official import OFFICIAL_COMMIT, OFFICIAL_DIR, OFFICIAL_RELATIVE
@@ -184,6 +187,39 @@ def _summary(meta: dict, pairings: pd.DataFrame, table: pd.DataFrame) -> str:
     return "\n".join(lines) + "\n"
 
 
+def site_target(args: argparse.Namespace) -> Path | None:
+    """Pasta dos dados do site; ``None`` = não exportar.
+
+    Sem ``--site-dir``, só uma execução com o CSV e a saída padrão mexe no site real:
+    um ensaio com caminhos próprios não o contamina.
+    """
+    if args.no_site:
+        return None
+    if args.site_dir is not None:
+        return args.site_dir
+    real = (
+        args.stage2.resolve() == STAGE2_CSV.resolve()
+        and args.out.resolve() == (PREDICTIONS_DIR / "stage2").resolve()
+    )
+    return PROCESSED_DIR if real else None
+
+
+def update_site(args: argparse.Namespace) -> None:
+    """Exporta os dados do site. Uma falha aqui não invalida a atualização já gravada."""
+    folder = site_target(args)
+    if folder is None:
+        print("Dados do site não atualizados (--no-site ou caminhos próprios sem --site-dir).")
+        return
+    try:
+        data = build(args.stage1, args.official_dir, args.seeds_file, args.stage2, args.out)
+        path = write_site_data(data, folder)
+    except (OSError, ValueError, KeyError, subprocess.CalledProcessError) as exc:
+        print(f"ATENÇÃO: o site NÃO foi atualizado: {exc}")
+        print("  Depois de corrigir: python -m sim.export_site")
+        return
+    print(f"Site atualizado: {path}")
+
+
 def main(argv: list[str] | None = None) -> int:
     cli = argparse.ArgumentParser(description="Atualização do Stage 2 por rodada")
     cli.add_argument("--stage1", type=Path, default=MANUAL_DIR / "stage1_results.csv")
@@ -196,6 +232,10 @@ def main(argv: list[str] | None = None) -> int:
     cli.add_argument("--matches-file", type=Path, default=MATCHES_PATH)
     cli.add_argument("--b1-params-file", type=Path, default=B1_PARAMS_PATH)
     cli.add_argument("--out", type=Path, default=PREDICTIONS_DIR / "stage2")
+    cli.add_argument("--site-dir", type=Path,
+                     help="onde gravar os dados do site (padrão: data/processed quando o CSV "
+                          "e a saída são os padrões)")  # fmt: skip
+    cli.add_argument("--no-site", action="store_true", help="não atualiza os dados do site")
     args = cli.parse_args(argv)
 
     try:
@@ -207,7 +247,8 @@ def main(argv: list[str] | None = None) -> int:
         if number == 1:
             raise ValueError(
                 "a rodada 1 é coberta pela previsão oficial; complete no CSV os oito "
-                "resultados dela antes de atualizar"
+                "resultados dela antes de atualizar (para só mostrar resultados parciais "
+                "no site: python -m sim.export_site)"
             )
         previous = [r for r in rows2 if number is None or r.round < number]
         b1_params = load_params(args.b1_params_file)
@@ -271,6 +312,7 @@ def main(argv: list[str] | None = None) -> int:
 
     print(text)
     print(f"Gravado em {out}")
+    update_site(args)
     print("Nada foi commitado. Para registrar antes da rodada:")
     print(f"  git add \"{out}\"; git commit -m \"Stage 2: {label}\"; git push origin main")
     return 0

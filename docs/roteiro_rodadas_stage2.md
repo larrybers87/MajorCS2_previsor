@@ -48,6 +48,15 @@ Salvar o texto da Wikipedia uma vez em uma pasta nova de `data/raw/wikipedia/` e
 `--wiki <arquivo>`. As diferenças são só listadas; vale o CSV.
 
 ## Site
-`python -m sim.site_server` e abrir `http://127.0.0.1:8000` (os dados são refeitos a cada
-recarga). Sem o servidor, `python -m sim.export_site` e abrir `app/index.html` (sem o
-Simulador).
+- **Recomendado:** `python -m sim.site_server` e abrir `http://127.0.0.1:8000`. A página
+  se recarrega sozinha (em cerca de 10 s) quando o CSV, as pastas de previsão ou o commit
+  mudam, mantendo a visão escolhida. Tem o Simulador.
+- **Arquivo local** (`app/index.html`, sem Simulador): `sim.round_update` já atualiza os
+  dados no fim da execução; recarregar a página (F5). Para mostrar resultados **sem**
+  gerar previsão (por exemplo, rodada pela metade): `python -m sim.export_site`.
+- Se a exportação falhar, a atualização da rodada continua gravada e o script avisa.
+- Um ensaio com `--stage2` ou `--out` próprios não mexe no site real (use `--site-dir`).
+
+O que aparece: **Ao vivo**, resultados da última rodada ao lado dos confrontos pendentes
+com probabilidades; **Previsor**, acerto da rodada, tabela rodada a rodada e acumulado
+(parcial, não é a avaliação oficial); **Simulador**, resultados reais fixos.

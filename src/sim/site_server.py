@@ -1,12 +1,14 @@
-"""Servidor local do site, com o modo Simulador.
+"""Servidor local do site, com o modo Simulador e atualização automática.
 
 Uso::
 
     python -m sim.site_server [--port 8000]    # abrir http://127.0.0.1:8000
 
-Escuta só em 127.0.0.1 e serve apenas a página e os dados gerados. A cada recarga os
-dados são refeitos a partir dos CSVs. No Simulador o navegador envia os vencedores
-escolhidos e recebe a chave calculada aqui, pela engine; nada é gravado em disco.
+Escuta só em 127.0.0.1 e serve apenas a página e os dados. Os dados são refeitos a cada
+pedido, a partir dos CSVs, e enviados da memória: o servidor não grava nada em disco. A
+página consulta ``/api/version`` e se recarrega quando os resultados ou as previsões
+mudam. No Simulador o navegador envia os vencedores escolhidos e recebe a chave calculada
+aqui, pela engine.
 """
 
 from __future__ import annotations
@@ -14,6 +16,7 @@ from __future__ import annotations
 import argparse
 import json
 import subprocess
+from dataclasses import dataclass
 from http import HTTPStatus
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
@@ -21,8 +24,8 @@ from pathlib import Path
 from ingest.seeds import SEEDS_PATH, load_seeds
 from ingest.vrs import PROJECT_ROOT
 
-from .common import MANUAL_DIR
-from .export_site import PROCESSED_DIR, STAGE2_CSV, build, write_site_data
+from .common import MANUAL_DIR, PREDICTIONS_DIR
+from .export_site import STAGE2_CSV, build, data_version, site_script
 from .format_config import DEFAULT_FORMAT
 from .live import Pick, apply_picks, official_model, stage_view
 from .official import OFFICIAL_DIR
@@ -33,6 +36,15 @@ APP_PAGE = PROJECT_ROOT / "app" / "index.html"
 STAGE1_CSV = MANUAL_DIR / "stage1_results.csv"
 MAX_BODY = 64 * 1024
 MAX_PICKS = 66
+
+
+@dataclass(frozen=True)
+class Paths:
+    """Entradas do site; os padrões são os do projeto (outros servem para ensaios)."""
+
+    stage1: Path = STAGE1_CSV
+    stage2: Path = STAGE2_CSV
+    updates: Path = PREDICTIONS_DIR / "stage2"
 
 
 def parse_request(body: dict) -> tuple[int, list[Pick], bool]:
@@ -88,8 +100,23 @@ def simulate(
     }
 
 
+class Server(ThreadingHTTPServer):
+    def __init__(self, address, handler, paths: Paths | None = None) -> None:
+        super().__init__(address, handler)
+        self.paths = paths or Paths()
+
+
 class Handler(BaseHTTPRequestHandler):
     server_version = "previsor"
+
+    @property
+    def paths(self) -> Paths:
+        return getattr(self.server, "paths", Paths())
+
+    def log_message(self, format: str, *args) -> None:  # noqa: A002
+        # A consulta periódica da versão encheria o terminal.
+        if "/api/version" not in self.path:
+            super().log_message(format, *args)
 
     def _send(self, status: HTTPStatus, content: bytes, content_type: str) -> None:
         self.send_response(status)
@@ -100,9 +127,12 @@ class Handler(BaseHTTPRequestHandler):
         self.end_headers()
         self.wfile.write(content)
 
-    def _error(self, status: HTTPStatus, message: str) -> None:
-        payload = json.dumps({"erro": message}, ensure_ascii=False).encode()
+    def _json(self, status: HTTPStatus, data: dict) -> None:
+        payload = json.dumps(data, ensure_ascii=False, allow_nan=False).encode()
         self._send(status, payload, "application/json")
+
+    def _error(self, status: HTTPStatus, message: str) -> None:
+        self._json(status, {"erro": message})
 
     def _local_host(self) -> bool:
         """Recusa cabeçalho Host de outro nome (proteção contra DNS rebinding)."""
@@ -121,18 +151,21 @@ class Handler(BaseHTTPRequestHandler):
             self._send(HTTPStatus.OK, APP_PAGE.read_bytes(), "text/html")
         elif path == "/data/processed/site_data.js":
             self._send_data()
+        elif path == "/api/version":
+            p = self.paths
+            self._json(HTTPStatus.OK, {"versao": data_version(p.stage1, p.stage2, p.updates)})
         else:
             self._error(HTTPStatus.NOT_FOUND, "não encontrado")
 
     def _send_data(self) -> None:
+        p = self.paths
         try:
-            target = write_site_data(build(STAGE1_CSV), PROCESSED_DIR)
-        except (FileNotFoundError, ValueError, subprocess.CalledProcessError) as exc:
+            script = site_script(build(p.stage1, stage2_path=p.stage2, updates_dir=p.updates))
+        except (OSError, ValueError, KeyError, subprocess.CalledProcessError) as exc:
             # Mostra o erro na página em vez de servir dados velhos sem avisar.
             message = json.dumps(str(exc), ensure_ascii=False)
-            script = f"window.SITE_ERROR = {message};\n".encode()
-            return self._send(HTTPStatus.OK, script, "text/javascript")
-        self._send(HTTPStatus.OK, target.read_bytes(), "text/javascript")
+            script = f"window.SITE_ERROR = {message};\n"
+        self._send(HTTPStatus.OK, script.encode("utf-8"), "text/javascript")
 
     def do_POST(self) -> None:  # noqa: N802
         if not self._local_host():
@@ -146,19 +179,24 @@ class Handler(BaseHTTPRequestHandler):
             length = int(self.headers.get("Content-Length", "0"))
             if not 0 < length <= MAX_BODY:
                 raise ValueError("tamanho do pedido inválido")
-            view = simulate(*parse_request(json.loads(self.rfile.read(length))))
-        except (FileNotFoundError, ValueError) as exc:
+            request = parse_request(json.loads(self.rfile.read(length)))
+            view = simulate(*request, self.paths.stage1, self.paths.stage2)
+        except (OSError, ValueError) as exc:
             return self._error(HTTPStatus.BAD_REQUEST, str(exc))
-        payload = json.dumps(view, ensure_ascii=False, allow_nan=False).encode()
-        self._send(HTTPStatus.OK, payload, "application/json")
+        self._json(HTTPStatus.OK, view)
 
 
 def main(argv: list[str] | None = None) -> int:
     cli = argparse.ArgumentParser(description="Servidor local do site")
     cli.add_argument("--port", type=int, default=8000)
+    cli.add_argument("--stage1", type=Path, default=STAGE1_CSV)
+    cli.add_argument("--stage2", type=Path, default=STAGE2_CSV)
+    cli.add_argument("--updates", type=Path, default=PREDICTIONS_DIR / "stage2",
+                     help="pasta com as atualizações por rodada")  # fmt: skip
     args = cli.parse_args(argv)
+    paths = Paths(args.stage1, args.stage2, args.updates)
     try:
-        server = ThreadingHTTPServer(("127.0.0.1", args.port), Handler)
+        server = Server(("127.0.0.1", args.port), Handler, paths)
     except OSError as exc:
         print(f"ERRO: não foi possível abrir a porta {args.port}: {exc}")
         return 1
