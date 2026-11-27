@@ -145,6 +145,16 @@ A previsão antecipada não mudou (mesmos blobs git). SHA-256, nas duas formas:
   `predictions/stage2/round<N>/`, commitadas só quando ele pedir.
 - **Formato do Stage 3 e dos playoffs:** parametrizado por flag até haver fonte oficial.
 
+## 27/11/2026 (tarde)
+
+- **Leitura da avaliação do Stage 2** (log loss): melhor se `d < −2 EP`, pior se
+  `d > +2 EP`, inconclusivo se `|d| ≤ 2 EP`
+  ([emenda 3](avaliacao_stage2_emenda_03.md)).
+- **Reservas de Vitality e Legacy:** sem ajuste no modelo oficial do Stage 3;
+  sensibilidade com e sem desconto de rating, definida antes de ver a previsão
+  ([emenda 3 do Stage 3](preregistro_stage3_emenda_03.md); valores do desconto
+  pendentes).
+
 ## Anteriores
 - Escopo temporal: a partir de 2025-06-01 (`claude/fontes-de-dados.md`).
 - Dashboard local por enquanto.

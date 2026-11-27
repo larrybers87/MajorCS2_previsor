@@ -60,8 +60,8 @@ anteriores; formato em que a partida foi jogada.
 | 8 | Legacy | convidado | 1662 | ⟨⟩ | substituto registrado (imprensa; ver substitutos) |
 | 9–16 | ⟨classificados, pelo seed final do Stage 2⟩ | Stage 2 | ⟨⟩ | ⟨⟩ | |
 
-Substitutos de Vitality e Legacy ([substitutos.md](substitutos.md)): ⟨decisão do Larry,
-tomada antes de ver a previsão; sem decisão, o modelo não é ajustado⟩.
+Reservas de Vitality e Legacy ([emenda 3](preregistro_stage3_emenda_03.md)): **o modelo
+oficial não é ajustado**. A sensibilidade vai na seção 6-A, à parte.
 
 ## 4. Rodada de abertura (1v9 … 8v16)
 
@@ -86,6 +86,15 @@ Posição final na suíça (P de cada posição, 1 a 16): ⟨arquivo⟩.
 Hipóteses: semifinais por chave, sem reordenar seeds (H7); **3º lugar em Bo3
 (hipótese)**; final em Bo5 conforme [formato](formato_stage3_playoffs.md). Modelo dos
 playoffs: **não coberto pelo pré-registro** — ⟨decidir antes de preencher⟩.
+
+## 6-A. Sensibilidade aos reservas (NÃO é a previsão oficial)
+
+Valores e método do desconto: ⟨emenda que os fixou, anterior a este cálculo⟩. Célula sem
+desconto igual à oficial? ⟨sim/não⟩.
+
+| Desconto Vitality | Desconto Legacy | P(avançar) Vitality | P(avançar) Legacy | P(título) Vitality | P(título) Legacy |
+|---|---|---:|---:|---:|---:|
+| ⟨uma linha por cenário⟩ | | | | | |
 
 ## 7. Limites
 Sem mapas, veto, forma por jogador nem ajuste a substitutos; probabilidades fixas dentro

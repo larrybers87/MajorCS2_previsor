@@ -18,7 +18,12 @@ confirmado oficialmente**; 3º lugar em Bo3 é **hipótese**.
 
 ### D42 — Modelo dos playoffs
 Não coberto pelo pré-registro do Stage 3. **Decidir** antes de preencher a previsão
-([esqueleto](modelo_previsao_stage3.md)), junto com os substitutos de Vitality e Legacy.
+([esqueleto](modelo_previsao_stage3.md)).
+
+### D43 — Tamanho do desconto na sensibilidade dos reservas
+Decidido: modelo oficial sem ajuste e sensibilidade com e sem desconto
+([emenda 3](preregistro_stage3_emenda_03.md)). **Faltam** os valores e a aplicação ao B1;
+há uma proposta na emenda. Fixar antes de calcular a previsão do Stage 3.
 
 ### D40 — `claude/regras-verificadas.md` ausente
 Citada no pedido; não está no repositório e não foi fornecida.
