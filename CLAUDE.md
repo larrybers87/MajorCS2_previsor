@@ -42,6 +42,9 @@ python -m sim.b1_ratings --stage1 data/manual/stage1_results.csv   # ratings B1 
 python -m sim.v3_stage1 --results data/manual/stage1_results.csv
 python -m backtest.v3_evaluation                         # docs/avaliacao_stage1.md
 python -m sim.export_site                                # dados de app/index.html
+python -m sim.site_server                                # site com Simulador (127.0.0.1:8000)
+python -m sim.round_update                               # docs/roteiro_rodadas_stage2.md
+python -m backtest.b1_decay_report                       # variantes do B1 (desenvolvimento)
 python -m sim.anexo_d25 --official <pasta da previsão>   # sensibilidade (não oficial)
 python -m backtest.calibration_diagnostic                # docs/calibracao_teste_b0.md
 predict_stage2 --stage1 data/manual/stage1_results.csv [--stage2 data/manual/stage2_results.csv]

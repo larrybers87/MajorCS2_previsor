@@ -2,10 +2,12 @@
 
 Uso::
 
-    python -m sim.v3_stage1 --results data/manual/stage1_results.csv
+    python -m sim.v3_stage1 --results data/manual/stage1_results.csv [--no-b1]
 
-Também confere os seeds (rodada 1) e os emparelhamentos das rodadas 2-5 (V2).
-Nenhum parâmetro é ajustado aqui: beta vem da calibração anterior ao Stage 1.
+Também confere os seeds (rodada 1) e os emparelhamentos das rodadas 2-5 (V2) e compara
+B0 e B1 lado a lado (``backtest.v3_compare``).
+Nenhum parâmetro é ajustado aqui: tudo vem de calibrações anteriores ao Stage 1.
+``matches.csv`` e ``teams.csv`` seguem sendo o B0 com ``w=0``.
 """
 
 from __future__ import annotations
@@ -17,17 +19,23 @@ import numpy as np
 import pandas as pd
 
 from backtest.b0_calibration import PARAMS_PATH
+from backtest.b1_selection import PARAMS_PATH as B1_PARAMS_PATH
+from backtest.h10_format import PARAMS_PATH as MODEL_PATH
 from backtest.metrics import brier_each, log_loss_each
+from backtest.v3_compare import compare, comparison_lines
 from ingest.seeds import SEEDS_PATH, load_seeds
+from ingest.vrs_matches import MATCHES_PATH
 from swiss import StageState, best_of, current_round, records, simulate_stage
 from swiss.rules import FINAL_RECORD_COUNTS, FINAL_RECORD_LABELS, N_TEAMS
 
+from .b1_ratings import config_from
 from .common import (
     MANUAL_DIR,
     PREDICTIONS_DIR,
     b0_from,
     freeze_inputs,
     load_params,
+    load_stage2_model,
     markdown_table,
     new_output_dir,
     percent,
@@ -140,6 +148,10 @@ def main(argv: list[str] | None = None) -> int:
     cli.add_argument("--seeds-file", type=Path, default=SEEDS_PATH)
     cli.add_argument("--params-file", type=Path, default=PARAMS_PATH)
     cli.add_argument("--out", type=Path, default=PREDICTIONS_DIR / "v3_stage1")
+    cli.add_argument("--no-b1", action="store_true", help="só o B0, sem a comparação")
+    cli.add_argument("--matches-file", type=Path, default=MATCHES_PATH)
+    cli.add_argument("--b1-params-file", type=Path, default=B1_PARAMS_PATH)
+    cli.add_argument("--model-file", type=Path, default=MODEL_PATH)
     args = cli.parse_args(argv)
 
     if not args.results.exists():
@@ -166,6 +178,20 @@ def main(argv: list[str] | None = None) -> int:
     notes = format_notes(state, rows)
     last_round = max((r.round for r in rows), default=0)
 
+    comparison = None
+    if not args.no_b1:
+        try:
+            b0_model = load_stage2_model(args.model_file)
+            b1_params = load_params(args.b1_params_file)
+            comparison = compare(
+                base, state, rows, seeds, b0_model["variants"], b0_model["transform"],
+                pd.read_parquet(args.matches_file), config_from(b1_params["chosen"]),
+                args.sims, args.seed, current_round(state) is None,
+            )  # fmt: skip
+        except (FileNotFoundError, ValueError) as exc:
+            print(f"ERRO na comparação com o B1 (use --no-b1 para só o B0): {exc}")
+            return 1
+
     metadata = run_metadata() | {
         "label": "RETROSPECTIVO",
         "n_sims": args.sims,
@@ -177,12 +203,17 @@ def main(argv: list[str] | None = None) -> int:
         "pairing_mismatches": mismatches,
         "format_notes": notes,
     }
+    if comparison:
+        metadata["comparison"] = comparison[1]
     lines = [
         "# V3 — Stage 1 (RETROSPECTIVO)",
         "",
         "Gerado **depois** das partidas: não é previsão. O B0 usa só o VRS de 02/11/2026 e "
         f"beta calibrado em partidas até {params['train_last']}; nada foi ajustado com o "
         "Stage 1. Com no máximo 33 partidas, o resultado NÃO permite comparar modelos.",
+        "",
+        "As seções de métricas e partidas logo abaixo são do **B0 com w=0**"
+        + ("; a comparação com o B1 está no fim." if comparison else "."),
         "",
         f"Partidas decididas: {summary_scores['partidas']} de 33; "
         + ("stage encerrado." if current_round(state) is None
@@ -233,8 +264,12 @@ def main(argv: list[str] | None = None) -> int:
         ),
         "",
     ]
+    if comparison:
+        lines += comparison_lines(*comparison)
     out = new_output_dir(args.out, metadata)
     metadata |= freeze_inputs(out, args.seeds_file, args.params_file)
+    if comparison:
+        write_csv(out / "comparison.csv", comparison[0])
     write_csv(out / "matches.csv", matches)
     write_csv(out / "teams.csv", teams)
     write_text(out / "summary.md", "\n".join(lines))

@@ -1,4 +1,4 @@
-# Dúvidas abertas e divergências (atualizado em 27/11/2026, sessão 05)
+# Dúvidas abertas e divergências (atualizado em 27/11/2026, sessão 06)
 
 "RB" = `major-supplemental-rulebook.md` (cópia local; ver [fontes_valve.md](fontes_valve.md)).
 Citações em [regras_suica.md](regras_suica.md); decisões em [decisoes.md](decisoes.md).
@@ -10,21 +10,24 @@ Fontes de imprensa são **secundárias**.
 O rulebook (HEAD da Valve em 27/11, commit `621b7d9`) diz Bo1 fora de avanço/eliminação e
 playoffs em Bo3; imprensa e Wikipedia dizem Stage 3 todo Bo3 e final Bo5. Não há horário
 oficial do Stage 3. Fontes em [relatorio_sessao_05.md](relatorio_sessao_05.md), item 8.
-Engine e configuração inalteradas.
+Nova tentativa na página da PGL falhou ([relatorio_sessao_06.md](relatorio_sessao_06.md),
+item 6). A troca é uma linha: `ACTIVE_FORMAT` em `src/sim/format_config.py`.
 
-### D37 — Rodada 5 do Stage 1 preenchida pela Wikipedia
-Placares de mapas vindos de fonte secundária (vencedores iguais aos informados pelo
-Larry; placares não entram em cálculo). **Confirmar.** A mesma página tem erro no quadro
-PVISION x FlyQuest (6-13; a tabela dela e o CSV indicam 9-13).
+### D39 — B1 no Stage 1 já conhecido antes da checagem de desastre
+A pedido, o V3 de 27/11 calculou o B1 nas 33 partidas do Stage 1 (retrospectivo). Elas
+fazem parte da checagem de desastre. A regra pré-registrada não mudou e a média 50/50 não
+foi calculada. **Decidir** se isso vira emenda 3 (só registro de conhecimento).
 
-### D38 — V3 retrospectivo com as 33 partidas não gerado
-O roteiro previa `sim.v3_stage1`; o pedido de 27/11 proíbe previsões retroativas quando
-não há previsão pré-Stage 1. A [avaliação](avaliacao_stage1.md) usa só o que já estava
-commitado (30 retrospectivas + 3 prévias). **Decidir** se roda.
+### D40 — `claude/regras-verificadas.md` ausente
+Citada no pedido; não está no repositório e não foi fornecida.
+
+### D41 — Playoffs implementados sobre hipóteses
+H7 (semifinais por chave, sem reordenar seeds) e 3º lugar em Bo3 entre os perdedores das
+semifinais. **Confirmar** com o regulamento da PGL antes de 10/12.
 
 ### D35 — B1 ao vivo com rodada pela metade
-O código congelado aplica qualquer partida decidida que receber. Para cumprir a D33, o
-chamador passará só as rodadas anteriores, sem alterar `b1_ratings.py`
+O código congelado aplica qualquer partida decidida que receber. `sim.round_update` e a
+comparação do V3 passam só as rodadas anteriores (testado), sem alterar `b1_ratings.py`
 ([emenda 2](preregistro_stage3_emenda_02.md)). **Confirmar** que isso basta.
 
 ## Modelo e dados
@@ -81,7 +84,10 @@ evento) segue sem solução: o VRS não informa o evento.
 - **D10-D13:** ver relatórios anteriores.
 - **D14, D18:** push autorizado e feito; arquivos da Valve fora do histórico.
 - **D15:** THE ONE = 1win, GOSH = BC.Game (decisão 3 da sessão 03).
-- **D16:** CSV do Stage 1 completo (rodada 5: ver D37).
+- **D16:** CSV do Stage 1 completo.
+- **D37:** Larry confirmou os placares da rodada 5 e PARIVISION 9-13 FlyQuest (HLTV,
+  conferido por ele); o quadro da Wikipedia (6-13) está errado.
+- **D38:** V3 retrospectivo com as 33 partidas rodado a pedido.
 - **D17:** primeiro jogo do Stage 2 em 28/11, 04:00 UTC; Bo1/Bo3 confirmados pelo
   calendário (compatível com a engine).
 - **D24:** GRID descartado; LiquipediaDB opcional, a cargo do Larry; nenhuma coleta nova.

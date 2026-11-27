@@ -22,3 +22,8 @@ def entrants_by_seed(seeds: pd.DataFrame, stage: int) -> list[str]:
 def stage2_names(seeds: pd.DataFrame, stage1: StageState) -> list[str]:
     """Seeds do Stage 2: convidados 1-8; classificados do Stage 1 como 9-16 (H3)."""
     return entrants_by_seed(seeds, 2) + advancing_teams(stage1)
+
+
+def stage3_names(seeds: pd.DataFrame, stage2: StageState) -> list[str]:
+    """Seeds do Stage 3: convidados 1-8; classificados do Stage 2 como 9-16 (H3)."""
+    return entrants_by_seed(seeds, 3) + advancing_teams(stage2)

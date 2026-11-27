@@ -263,7 +263,7 @@ def test_v3_hides_record_metrics_while_stage_is_open(files):
     out = files["dir"] / "v3"
     code = v3_stage1.main(
         ["--results", str(csv_path), "--sims", "500", "--out", str(out),
-         "--seeds-file", str(files["seeds"]), "--params-file", str(files["params"])]
+         "--seeds-file", str(files["seeds"]), "--params-file", str(files["params"]), "--no-b1"]
     )  # fmt: skip
     assert code == 0
     meta = json.loads((next(out.iterdir()) / "meta.json").read_text(encoding="utf-8"))
@@ -284,7 +284,7 @@ def test_v3_report(files):
     out = files["dir"] / "v3"
     code = v3_stage1.main(
         ["--results", str(csv_path), "--sims", "3000", "--out", str(out),
-         "--seeds-file", str(files["seeds"]), "--params-file", str(files["params"])]
+         "--seeds-file", str(files["seeds"]), "--params-file", str(files["params"]), "--no-b1"]
     )  # fmt: skip
     assert code == 0
     folder = next(out.iterdir())

@@ -2,7 +2,10 @@
 
 Uso::
 
-    python -m sim.export_site [--prediction predictions/stage2/<carimbo>]
+    python -m sim.export_site
+
+Para o modo Simulador, use o servidor local (``python -m sim.site_server``), que também
+regenera estes dados a cada recarga.
 
 Grava em ``data/processed/`` (fora do git):
 
@@ -11,7 +14,9 @@ Grava em ``data/processed/`` (fora do git):
 * ``stage2_prediction/``: cópia da pasta oficial da previsão do Stage 2.
 
 Emparelhamentos, cartéis, Difficulty e seeds vêm da engine; a avaliação vem de
-``backtest.v3_evaluation``; as probabilidades do Stage 2 vêm da pasta commitada.
+``backtest.v3_evaluation``; as probabilidades do Stage 2 vêm da pasta oficial congelada.
+O Stage 2 ao vivo lê ``data/manual/stage2_results.csv`` (se existir) e a atualização mais
+recente em ``predictions/stage2/round<N>/``.
 """
 
 from __future__ import annotations
@@ -26,7 +31,7 @@ from pathlib import Path
 
 import pandas as pd
 
-from backtest.v3_evaluation import commit_info, evaluate
+from backtest.v3_evaluation import commit_info, evaluate, match_metrics, summarize_matches
 from ingest.seeds import SEEDS_PATH, load_seeds
 from ingest.vrs import PROJECT_ROOT
 from swiss import StageState, buchholz, records, standings
@@ -34,11 +39,13 @@ from swiss.rules import FINAL_RECORD_LABELS, N_ADVANCING
 
 from .common import MANUAL_DIR, PREDICTIONS_DIR, write_csv, write_text
 from .format_config import DEFAULT_FORMAT
+from .live import OfficialModel, apply_picks, official_model, stage_view
+from .official import OFFICIAL_DIR
 from .results import ResultRow, build_state, pairing_report, read_results
 from .stages import entrants_by_seed, stage2_names
 
 PROCESSED_DIR = PROJECT_ROOT / "data" / "processed"
-COMPLETE_MODE = "Stage 1 completo"
+STAGE2_CSV = MANUAL_DIR / "stage2_results.csv"
 
 
 def round_matches(
@@ -134,16 +141,72 @@ def stage2_seed_table(seeds: pd.DataFrame, stage1: StageState) -> pd.DataFrame:
     return pd.DataFrame(rows)
 
 
-def latest_official(base: Path) -> Path:
-    """Pasta mais recente com o Stage 1 completo e sem resultados do Stage 2."""
-    for folder in sorted(base.glob("*"), reverse=True):
-        meta_path = folder / "meta.json"
-        if not meta_path.exists():
-            continue
+def latest_update(base: Path) -> dict | None:
+    """Atualização ao vivo mais recente (``round<N>/`` ou ``final/``), se houver."""
+    found = []
+    for meta_path in base.glob("*/*/meta.json"):
         meta = json.loads(meta_path.read_text(encoding="utf-8"))
-        if meta.get("mode") == COMPLETE_MODE:
-            return folder
-    raise FileNotFoundError(f"nenhuma previsão com o Stage 1 completo em {base}")
+        if meta.get("kind") == "atualizacao_ao_vivo":
+            found.append((meta["generated_at_utc"], str(meta_path.parent), meta))
+    if not found:
+        return None
+    _, name, meta = max(found, key=lambda item: item[:2])
+    folder = Path(name)
+    table = pd.read_csv(folder / "probabilities.csv")
+    try:
+        commit = commit_info(folder / "probabilities.csv")
+    except (ValueError, subprocess.CalledProcessError):
+        commit = None
+    return {
+        "pasta": f"{folder.parent.name}/{folder.name}",
+        "rodada": meta["round"],
+        "gerado_em": meta["generated_at_utc"],
+        "parcial": len(meta["decided_in_current_round"]),
+        "commit": commit,
+        "times": [
+            {
+                "seed": int(r["seed"]),
+                "time": r["time"],
+                "cartel_atual": r["cartel_atual"],
+                "cartoes": [float(r[f"P({label})"]) for label in FINAL_RECORD_LABELS],
+                "p_avancar": float(r["P(avançar)"]),
+                "p_oficial": float(r["P(avançar) na oficial"]),
+            }
+            for r in table.to_dict("records")
+        ],
+    }
+
+
+def stage2_live(names: Sequence[str], rows: Sequence[ResultRow], model: OfficialModel) -> dict:
+    """Chave do Stage 2 com os resultados reais e a próxima rodada pela engine."""
+    real = build_state(DEFAULT_FORMAT.stage_state(2, names), rows)
+    state, _, _ = apply_picks(real, ())
+    view = stage_view(state, rows, model.prob_fn)
+    played = [m for matches in view["rodadas"] for m in matches if m["vencedor"]]
+    summary = None
+    if played:
+        # Probabilidades do B0 oficial, congelado antes da primeira partida.
+        predictions = pd.DataFrame(
+            [
+                {"rodada": m["rodada"], "time_a": m["a"], "time_b": m["b"],
+                 "best_of": m["bo"], "P(time_a vence)": m["p_a"]}
+                for m in played
+            ]  # fmt: skip
+        )
+        scored = match_metrics(predictions, rows)
+        by_key = {(r["rodada"], r["time_a"]): r for r in scored.to_dict("records")}
+        for m in played:
+            r = by_key[(m["rodada"], m["a"])]
+            m["previsao"] = {
+                "tipo": "oficial", "p_a": m["p_a"], "acertou": r["acertou"],
+                "log_loss": r["log_loss"], "brier": r["brier"],
+            }  # fmt: skip
+        summary = summarize_matches(scored)
+    return view | {
+        "partidas_jogadas": len(played),
+        "resumo": summary,
+        "divergencias_engine": pairing_report(real),
+    }
 
 
 def stage2_data(folder: Path, seed_table: pd.DataFrame) -> dict:
@@ -190,7 +253,13 @@ def stage2_data(folder: Path, seed_table: pd.DataFrame) -> dict:
     }
 
 
-def build(results_path: Path, prediction: Path, seeds_path: Path = SEEDS_PATH) -> dict:
+def build(
+    results_path: Path,
+    prediction: Path = OFFICIAL_DIR,
+    seeds_path: Path = SEEDS_PATH,
+    stage2_path: Path = STAGE2_CSV,
+    updates_dir: Path = PREDICTIONS_DIR / "stage2",
+) -> dict:
     seeds = load_seeds(seeds_path)
     rows = read_results(results_path)
     stage1 = build_state(DEFAULT_FORMAT.stage_state(1, entrants_by_seed(seeds, 1)), rows)
@@ -202,6 +271,9 @@ def build(results_path: Path, prediction: Path, seeds_path: Path = SEEDS_PATH) -
     }
     seed_table = stage2_seed_table(seeds, stage1)
     info = seeds.set_index("name")
+    rows2 = read_results(stage2_path) if stage2_path.exists() else []
+    live = stage2_live(seed_table["time"].tolist(), rows2, official_model(seeds, prediction))
+    live |= {"tem_csv": stage2_path.exists(), "atualizacao": latest_update(updates_dir)}
     return {
         "gerado_em": datetime.now(timezone.utc).isoformat(timespec="seconds"),
         "cartoes": list(FINAL_RECORD_LABELS),
@@ -215,18 +287,29 @@ def build(results_path: Path, prediction: Path, seeds_path: Path = SEEDS_PATH) -
         },
         "avaliacao": evaluation,
         "stage2": stage2_data(prediction, seed_table),
+        "stage2_ao_vivo": live,
     }
+
+
+def write_site_data(data: dict, folder: Path) -> Path:
+    path = folder / "site_data.js"
+    payload = json.dumps(data, ensure_ascii=False, allow_nan=False)
+    folder.mkdir(parents=True, exist_ok=True)
+    write_text(path, f"window.SITE_DATA = {payload};\n")
+    return path
 
 
 def main(argv: list[str] | None = None) -> int:
     cli = argparse.ArgumentParser(description="Dados do site")
     cli.add_argument("--stage1", type=Path, default=MANUAL_DIR / "stage1_results.csv")
-    cli.add_argument("--prediction", type=Path, help="pasta da previsão do Stage 2")
+    cli.add_argument("--stage2", type=Path, default=STAGE2_CSV)
+    cli.add_argument("--prediction", type=Path, default=OFFICIAL_DIR,
+                     help="pasta da previsão oficial do Stage 2")  # fmt: skip
     cli.add_argument("--out", type=Path, default=PROCESSED_DIR)
     args = cli.parse_args(argv)
     try:
-        folder = (args.prediction or latest_official(PREDICTIONS_DIR / "stage2")).resolve()
-        data = build(args.stage1, folder)
+        folder = args.prediction.resolve()
+        data = build(args.stage1, folder, stage2_path=args.stage2)
         seeds = load_seeds(SEEDS_PATH)
         stage1 = build_state(
             DEFAULT_FORMAT.stage_state(1, entrants_by_seed(seeds, 1)), read_results(args.stage1)
@@ -234,13 +317,12 @@ def main(argv: list[str] | None = None) -> int:
     except (FileNotFoundError, ValueError, subprocess.CalledProcessError) as exc:
         print(f"ERRO: {exc}")
         return 1
-    args.out.mkdir(parents=True, exist_ok=True)
-    payload = json.dumps(data, ensure_ascii=False, allow_nan=False)
-    write_text(args.out / "site_data.js", f"window.SITE_DATA = {payload};\n")
+    path = write_site_data(data, args.out)
     write_csv(args.out / "stage2_seeds.csv", stage2_seed_table(seeds, stage1))
     shutil.copytree(folder, args.out / "stage2_prediction", dirs_exist_ok=True)
-    print(f"Gravado em {args.out / 'site_data.js'} (previsão {folder.name})")
-    print(f"Abra {PROJECT_ROOT / 'app' / 'index.html'} no navegador.")
+    print(f"Gravado em {path} (previsão oficial {folder.name})")
+    print(f"Abra {PROJECT_ROOT / 'app' / 'index.html'} no navegador")
+    print("ou, para o Simulador: python -m sim.site_server")
     return 0
 
 

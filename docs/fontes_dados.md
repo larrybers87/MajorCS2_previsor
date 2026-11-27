@@ -16,7 +16,13 @@ contexto (formato, substitutos) são registradas com a fonte e não alimentam o 
 **27/11 (sessão 05):** a rodada 5 do Stage 1 foi completada a partir do texto bruto da
 Wikipedia (CC BY-SA; cópia em `data/raw/wikipedia/`), a pedido de fechamento do Stage 1.
 Os vencedores foram informados pelo Larry; da Wikipedia vieram só os placares, que não
-alimentam o modelo. Aguarda confirmação (D37).
+alimentam o modelo. **Confirmado pelo Larry** (D37). Daqui em diante os resultados vêm do
+CSV dele; a Wikipedia serve só de conferência secundária (`sim.wiki_check`, arquivo salvo
+à mão; nada é baixado por script).
+
+**27/11 (sessão 06):** a pedido, nova tentativa na página oficial da PGL sobre formato e
+horário (cópias em `data/raw/pgl/`), sem conteúdo legível; a consulta ao serviço de dados
+do site foi bloqueada pela permissão da sessão e não foi repetida.
 
 ## Fora
 

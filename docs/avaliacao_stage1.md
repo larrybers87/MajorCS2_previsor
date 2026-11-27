@@ -9,7 +9,7 @@ Gerado por `python -m backtest.v3_evaluation` (não editar à mão).
 - **Prévio** (rodada 5): 3 partidas enviadas ao GitHub em 2026-11-27T00:14:53Z, antes do início (2026-11-27T06:00:00Z). É previsão de verdade, mas com n = 3.
 - As duas partes usam variantes diferentes do B0 (w=0 no retrospectivo; média de w=0 e w=1 no prévio) e **não são somadas**.
 - Com n = 30 (ou 33) isto é **diagnóstico**. Não ordena modelos, e as partidas e os times de um torneio não são independentes.
-- O log loss do B1 e da média B0/B1 neste Major **não** foi calculado (reservado à checagem pré-registrada do Stage 3).
+- B0 e B1 lado a lado nas 33 partidas, também retrospectivo, estão em `predictions/v3_stage1/20261127T163922Z/summary.md`. A média B0/B1 neste Major **não** foi calculada (reservada à checagem pré-registrada do Stage 3).
 
 ## Por partida
 

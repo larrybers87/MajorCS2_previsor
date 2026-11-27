@@ -1,7 +1,11 @@
 """Formato do Singapore 2026 (decisão 2 da sessão 02; ver ``docs/decisoes.md``).
 
-Stage 3 todo em Bo3 e final em Bo5 NÃO constam no rulebook da Valve: são decisões
-adotadas com base na imprensa e ficam configuráveis aqui.
+Stage 3 todo em Bo3, final em Bo5 e disputa de 3º lugar NÃO constam no rulebook da
+Valve: são decisões adotadas com base na imprensa, **sem confirmação oficial legível**.
+
+Para trocar quando a fonte oficial for confirmada, mude ``ACTIVE_FORMAT``: ``anunciado``
+(imprensa) ou ``rulebook`` (texto da Valve). Se a fonte oficial disser outra coisa,
+ajuste os campos de ``ANNOUNCED``.
 """
 
 from __future__ import annotations
@@ -29,4 +33,13 @@ class TournamentFormat:
         )
 
 
-DEFAULT_FORMAT = TournamentFormat()
+ANNOUNCED = TournamentFormat()
+# Rulebook: Bo1 fora de avanço/eliminação em todo stage suíço, playoffs todos em Bo3 e
+# nenhuma disputa de 3º lugar prevista.
+RULEBOOK = TournamentFormat(
+    all_best_of_three_stages=frozenset(), final_best_of=3, third_place_match=False
+)
+FORMATS = {"anunciado": ANNOUNCED, "rulebook": RULEBOOK}
+
+ACTIVE_FORMAT = "anunciado"
+DEFAULT_FORMAT = FORMATS[ACTIVE_FORMAT]

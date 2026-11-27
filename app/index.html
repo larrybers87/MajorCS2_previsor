@@ -30,7 +30,7 @@ button:focus-visible,[tabindex]:focus-visible{outline:2px solid var(--acc);outli
 .tool{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:12px}
 .sw{display:grid;grid-template-columns:repeat(5,minmax(175px,1fr)) minmax(190px,1.1fr);gap:14px;overflow-x:auto;padding:4px 2px 10px}
 .gl{font-size:15px;font-weight:600;margin:0 0 6px 2px}.grp{margin-bottom:16px}
-.mc{background:var(--pn2);border:1px solid var(--ln);border-radius:6px;margin-bottom:6px;overflow:hidden;cursor:pointer}
+.mc{background:var(--pn2);border:1px solid var(--ln);border-radius:6px;margin-bottom:6px;overflow:hidden}.mc[data-match]{cursor:pointer}.rw[data-pick]{cursor:pointer}.rw[data-pick]:hover{background:rgba(90,169,255,.16)}
 .mc.pend{border-style:dashed;border-color:var(--ln2)}.mc.msel{outline:2px solid var(--acc)}
 .rw{display:grid;grid-template-columns:20px minmax(0,1fr) auto auto;gap:6px;align-items:center;padding:4px 8px}
 .rw+.rw{border-top:1px solid var(--ln)}
@@ -78,32 +78,51 @@ tbody tr.pick{cursor:pointer}tbody tr.pick:hover{background:var(--pn2)}tr.tsel{b
 <script>
 "use strict";
 const D = window.SITE_DATA;
-const st = {stage: "2", tab: "bracket", mode: "det", team: null, match: null};
+const st = {
+  stage: "2", tab: "bracket", mode: "det", team: null, match: null,
+  // Simulador: escolhas [rodada, a, b, vencedor], opção "do zero" e resposta do servidor.
+  picks: {"1": [], "2": []}, scratch: {"1": false, "2": false}, sim: {"1": null, "2": null},
+};
+const ticket = {"1": 0, "2": 0};
+const MODES = {
+  "1": [["det", "Detalhado"], ["prev", "Previsor"], ["sim", "Simulador"]],
+  "2": [["det", "Ao vivo"], ["prev", "Previsor"], ["sim", "Simulador"]],
+};
+const SUBS = {"FUT": "começa com substituto", "Astralis": "começa com substituto"};
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const pct = (v, d = 1) => (100 * v).toFixed(d).replace(".", ",") + "%";
 const num = (v, d = 3) => v.toFixed(d).replace(".", ",");
 const hue = s => { let h = 0; for (const c of s) h = (h * 31 + c.charCodeAt(0)) % 360; return h; };
 const logo = n => `<span class="lg" aria-hidden="true" style="background:hsl(${hue(n)} 45% 36%)">${esc(n.split(" ").map(w => w[0]).join("").slice(0, 3).toUpperCase())}</span>`;
-const SUBS = {"FUT": "começa com substituto", "Astralis": "começa com substituto"};
+const kpi = (value, label) => `<div class="kpi"><b>${value}</b><span>${label}</span></div>`;
 
-function card(m) {
-  const prev = st.mode === "prev" && m.previsao;
+/* ---------- chave ---------- */
+function card(m, opt) {
+  const prev = opt.prev && m.previsao;
   const done = m.vencedor !== null && m.vencedor !== undefined;
+  const canPick = opt.sim && m.origem !== "real";
+  const pa = prev ? m.previsao.p_a : (opt.showP && m.p_a !== undefined ? m.p_a : null);
   const row = (team, score, p) => {
     const cls = done ? (m.vencedor === team ? "win" : "lose") : "";
-    return `<div class="rw ${cls}${st.team === team ? " tsel" : ""}">${logo(team)}<span class="nm">${esc(team)}</span>` +
-      `<span class="pc">${p === null ? "" : pct(p, 0)}</span><span class="sc">${done ? score : ""}</span></div>`;
+    const mark = done ? (score ?? (m.vencedor === team ? "V" : "")) : "";
+    const attrs = canPick
+      ? ` role="button" tabindex="0" aria-pressed="${m.vencedor === team}" data-pick="${esc(JSON.stringify([m.rodada, m.a, m.b, team]))}"`
+      : "";
+    return `<div class="rw ${cls}${st.team === team ? " tsel" : ""}"${attrs}>${logo(team)}<span class="nm">${esc(team)}</span>` +
+      `<span class="pc">${p === null ? "" : pct(p, 0)}</span><span class="sc">${mark}</span></div>`;
   };
-  const pa = st.stage === "2" ? m.p_a : (prev ? m.previsao.p_a : null);
   let badge = "";
   if (prev) {
     badge = (m.previsao.tipo === "previo" ? '<span class="bdg pre">prévia</span>' : "") +
       `<span class="bdg ${m.previsao.acertou ? "ok" : "no"}">${m.previsao.acertou ? "✓ acertou" : "✗ errou"}</span>`;
+  } else if (opt.sim && done) {
+    badge = m.origem === "escolha" ? '<span class="bdg pre">sua escolha</span>' : "resultado real";
   }
   const key = `${m.a}|${m.b}`;
   const hit = st.team === m.a || st.team === m.b;
-  return `<div class="mc${done ? "" : " pend"}${hit ? " hit" : ""}${st.match === key ? " msel" : ""}" tabindex="0" data-match="${esc(key)}">` +
+  const open = opt.sim ? "" : ` tabindex="0" data-match="${esc(key)}"`;
+  return `<div class="mc${done ? "" : " pend"}${hit ? " hit" : ""}${!opt.sim && st.match === key ? " msel" : ""}"${open}>` +
     row(m.a, m.placar_a, pa) + row(m.b, m.placar_b, pa === null ? null : 1 - pa) +
     `<div class="mf"><span>R${m.rodada} · Bo${m.bo}</span><span>${badge}</span></div></div>`;
 }
@@ -114,7 +133,7 @@ function finalBox(label, teams, expected) {
   return `<div class="fbox ${label[0] === "3" ? "g" : "r"}"><h4>${label.replace("-", ":")}</h4><div class="chips">${chips}${unknown}</div></div>`;
 }
 
-function bracket(rounds, finals) {
+function bracket(rounds, finals, opt = {}) {
   const expected = {"3-0": 2, "3-1": 3, "3-2": 3, "2-3": 3, "1-3": 3, "0-3": 2};
   let html = "";
   for (let r = 0; r < 5; r++) {
@@ -129,7 +148,7 @@ function bracket(rounds, finals) {
         if (!groups.has(k)) groups.set(k, []);
         groups.get(k).push(m);
       }
-      for (const [k, list] of groups) html += `<div class="grp"><div class="gl">${k}</div>${list.map(card).join("")}</div>`;
+      for (const [k, list] of groups) html += `<div class="grp"><div class="gl">${k}</div>${list.map(m => card(m, opt)).join("")}</div>`;
     }
     html += "</div>";
   }
@@ -142,20 +161,75 @@ function drawer(rounds) {
   const m = rounds.flat().find(x => `${x.a}|${x.b}` === st.match);
   if (!m) return "";
   let text = `<p><b>${esc(m.a)}</b> (VRS ${D.times[m.a].vrs}) x <b>${esc(m.b)}</b> (VRS ${D.times[m.b].vrs})</p>`;
-  if (m.vencedor) text += `<p>Resultado: <b>${esc(m.vencedor)}</b> (${m.placar_a} a ${m.placar_b}, ${m.bo === 1 ? "rounds" : "mapas"})</p>`;
+  if (m.vencedor) {
+    const score = m.placar_a === null || m.placar_a === undefined ? "" : ` (${m.placar_a} a ${m.placar_b}, ${m.bo === 1 ? "rounds" : "mapas"})`;
+    text += `<p>Resultado: <b>${esc(m.vencedor)}</b>${score}</p>`;
+  }
   const p = m.previsao;
+  const notes = {
+    previo: "Previsão enviada ao GitHub antes da partida (média de w=0 e w=1).",
+    retrospectivo: "Retrospectivo: calculado depois da partida (B0, w=0).",
+    oficial: "B0 da previsão oficial, congelado antes do primeiro jogo do Stage 2.",
+  };
   if (p) {
-    text += `<p>Modelo antes: ${esc(m.a)} ${pct(p.p_a)}, ${esc(m.b)} ${pct(1 - p.p_a)} · log loss ${num(p.log_loss)} · Brier ${num(p.brier)}</p>` +
-      `<p class="note">${p.tipo === "previo" ? "Previsão enviada ao GitHub antes da partida (média de w=0 e w=1)." : "Retrospectivo: calculado depois da partida (B0, w=0)."}</p>`;
+    text += `<p>Modelo antes: ${esc(m.a)} ${pct(p.p_a)}, ${esc(m.b)} ${pct(1 - p.p_a)} · log loss ${num(p.log_loss)} · Brier ${num(p.brier)}</p><p class="note">${notes[p.tipo]}</p>`;
   } else if (m.p_a !== undefined) {
     text += `<p>Previsão: ${esc(m.a)} ${pct(m.p_a)}, ${esc(m.b)} ${pct(1 - m.p_a)} (Bo${m.bo})</p>`;
   }
   return `<div class="panel"><h2>Partida · Rodada ${m.rodada} · Bo${m.bo}</h2>${text}</div>`;
 }
 
+function modeBar(note) {
+  const buttons = MODES[st.stage].map(([v, label]) => `<button data-v="${v}">${label}</button>`).join("");
+  return `<div class="tool"><div class="pill" id="modes" role="group" aria-label="Modo">${buttons}</div><span class="note">${note}</span></div>`;
+}
+
+/* ---------- Simulador (a chave vem do Python) ---------- */
+async function requestSim() {
+  const stage = st.stage, mine = ++ticket[stage];
+  if (location.protocol === "file:") return render();
+  render();
+  try {
+    const response = await fetch("/api/simulate", {
+      method: "POST", headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({
+        stage: Number(stage), do_zero: st.scratch[stage],
+        picks: st.picks[stage].map(([rodada, a, b, vencedor]) => ({rodada, a, b, vencedor})),
+      }),
+    });
+    const data = await response.json();
+    if (mine !== ticket[stage]) return;
+    if (!response.ok) throw new Error(data.erro || response.statusText);
+    // Escolhas que não cabem mais na chave (mudou uma rodada anterior) são descartadas.
+    const lost = new Set(data.ignoradas.map(p => `${p.rodada}|${p.a}|${p.b}`));
+    st.picks[stage] = st.picks[stage].filter(p => !lost.has(`${p[0]}|${p[1]}|${p[2]}`));
+    st.sim[stage] = data;
+  } catch (error) {
+    if (mine !== ticket[stage]) return;
+    st.sim[stage] = {erro: error.message};
+  }
+  render();
+}
+
+function simView() {
+  if (location.protocol === "file:") {
+    return `<div class="panel"><h2>Simulador</h2><p>O Simulador usa a engine em Python. Rode <code>python -m sim.site_server</code> e abra <code>http://127.0.0.1:8000</code>.</p></div>`;
+  }
+  const stage = st.stage, sim = st.sim[stage], count = st.picks[stage].length;
+  const tools = `<div class="tool"><label><input type="checkbox" id="scratch"${st.scratch[stage] ? " checked" : ""}> começar do zero (ignorar resultados reais)</label>
+    <button id="clear">Limpar escolhas</button><span class="note">${count} escolha(s). Clique em um time de um jogo tracejado ou já escolhido.</span></div>`;
+  if (!sim) return tools + '<div class="panel"><p class="note">Calculando…</p></div>';
+  if (sim.erro) return tools + `<div class="warn"><b>Não foi possível simular:</b> ${esc(sim.erro)}</div>`;
+  const seeds = sim.completo
+    ? `<div class="panel"><h2>Classificados desta simulação</h2><p>${sim.classificados.map((t, i) => `<span class="chip">${logo(t)}${i + 9}º seed: ${esc(t)}</span>`).join(" ")}</p></div>`
+    : "";
+  const note = !st.scratch[stage] && sim.completo && !count ? '<p class="note">Stage encerrado: marque “começar do zero” para simular.</p>' : "";
+  return tools + `<div class="panel"><h2>Stage ${stage} — simulação com as suas escolhas</h2>${note}${bracket(sim.rodadas, sim.finais, {sim: true, showP: stage === "2"})}</div>${seeds}`;
+}
+
+/* ---------- Stage 1 ---------- */
 function scorePanel() {
   const e = D.avaliacao, r = e.retrospectivo.resumo, p = e.previo_r5.resumo, t = e.times.resumo;
-  const kpi = (value, label) => `<div class="kpi"><b>${value}</b><span>${label}</span></div>`;
   const teams = e.times.linhas.slice().sort((a, b) => b.p_avancar - a.p_avancar).map(x =>
     `<tr class="pick${st.team === x.time ? " tsel" : ""}" data-team="${esc(x.time)}"><td>${logo(x.time)} ${esc(x.time)}</td><td class="n">${pct(x.p_avancar)}</td>` +
     `<td>${x.previsto_avanca ? "entre os 8" : "fora"}</td><td class="${x.avancou ? "w" : "l"}">${x.cartel} ${x.avancou ? "✓ avançou" : "eliminado"}</td>` +
@@ -176,39 +250,80 @@ function scorePanel() {
     <div class="scroll"><table><thead><tr><th>Time</th><th class="n">P(avançar)</th><th>Escolha do modelo</th><th>Observado</th><th class="n">P(cartel observado)</th><th class="n">log score</th><th class="n">sem informação</th></tr></thead><tbody>${teams}</tbody></table></div></div>`;
 }
 
-function stage1Bracket() {
+function stage1View() {
+  if (st.mode === "sim") return modeBar("Stage 1 do zero ou a partir dos resultados reais.") + simView();
   const finals = {};
   for (const x of D.stage1.classificacao) (finals[x.cartel] = finals[x.cartel] || []).push(x.time);
   const div = D.stage1.divergencias_engine;
-  return `<div class="tool"><div class="pill" id="modes" role="group" aria-label="Modo"><button data-v="det">Detalhado</button><button data-v="prev">Previsor</button></div>
-      <span class="note">Clique em um time dos quadros finais ou em uma partida. ${div.length ? "Há divergências com a engine." : "A engine reproduz todos os confrontos reais."}</span></div>
-    <div class="panel"><h2>Stage 1 — resultados</h2>${bracket(D.stage1.rodadas, finals)}</div>
+  const note = `Clique em um time dos quadros finais ou em uma partida. ${div.length ? "Há divergências com a engine." : "A engine reproduz todos os confrontos reais."}`;
+  return modeBar(note) +
+    `<div class="panel"><h2>Stage 1 — resultados</h2>${bracket(D.stage1.rodadas, finals, {prev: st.mode === "prev"})}</div>
     ${drawer(D.stage1.rodadas)}${st.mode === "prev" ? scorePanel() : ""}`;
 }
 
+/* ---------- Stage 2 ---------- */
 function stackBar(t) {
   return `<div class="stack">${t.cartoes.map((v, i) =>
     `<div style="flex:${v} 1 0;background:var(--c${i})" data-tip="${esc(t.time)} · ${D.cartoes[i]}: ${pct(v)}"></div>`).join("")}</div>`;
 }
 
-function stage2Bracket() {
+const legend = () => `<div class="legend">${D.cartoes.map((c, i) => `<span><i style="background:var(--c${i})"></i>${c}</span>`).join("")}<span>azul avança, vermelho é eliminado</span></div>`;
+const teamRow = t => `<tr class="pick${st.team === t.time ? " tsel" : ""}" data-team="${esc(t.time)}"><td class="n">${t.seed}</td><td>${logo(t.time)} ${esc(t.time)}${SUBS[t.time] ? " *" : ""}</td>`;
+
+function updatePanel() {
+  const u = D.stage2_ao_vivo.atualizacao;
+  if (!u) {
+    return `<div class="panel"><h2>Atualização ao vivo</h2><p class="note">Nenhuma ainda. Depois de cada rodada: complete o CSV e rode <code>python -m sim.round_update</code>.</p></div>`;
+  }
+  const rows = u.times.map(t => teamRow(t) + `<td>${t.cartel_atual}</td><td>${stackBar(t)}</td><td class="n"><b>${pct(t.p_avancar)}</b></td><td class="n">${pct(t.p_oficial)}</td></tr>`).join("");
+  const title = u.rodada === null ? "stage encerrado" : `antes da rodada ${u.rodada}`;
+  const commit = u.commit ? `commit ${esc(u.commit.commit)}` : "ainda não commitada";
+  const partial = u.parcial ? `<div class="warn">Parcial: ${u.parcial} partida(s) da rodada já estavam decididas.</div>` : "";
+  return `<div class="panel"><h2>Atualização ao vivo — ${title} (não é a previsão oficial)</h2>${partial}
+    <p class="note">Pasta ${esc(u.pasta)} · ${commit} · gerada em ${esc(u.gerado_em)}.</p>${legend()}
+    <div class="scroll"><table><thead><tr><th class="n">Seed</th><th>Time</th><th>V-D</th><th>Distribuição</th><th class="n">Avança</th><th class="n">Na oficial</th></tr></thead><tbody>${rows}</tbody></table></div></div>`;
+}
+
+function officialPanel() {
   const s = D.stage2;
-  const round1 = s.abertura.map(m => ({rodada: 1, a: m.a, b: m.b, cartel: [0, 0], bo: m.bo, p_a: m.p_a}));
   const rows = s.times.slice().sort((a, b) => b.p_avancar - a.p_avancar).map(t =>
-    `<tr class="pick${st.team === t.time ? " tsel" : ""}" data-team="${esc(t.time)}"><td class="n">${t.seed}</td><td>${logo(t.time)} ${esc(t.time)}${SUBS[t.time] ? " *" : ""}</td>` +
-    `<td>${stackBar(t)}</td><td class="n"><b>${pct(t.p_avancar)}</b></td><td class="n">${pct(Math.min(t.p_avancar_w0, t.p_avancar_w1))} a ${pct(Math.max(t.p_avancar_w0, t.p_avancar_w1))}</td>` +
+    teamRow(t) + `<td>${stackBar(t)}</td><td class="n"><b>${pct(t.p_avancar)}</b></td><td class="n">${pct(Math.min(t.p_avancar_w0, t.p_avancar_w1))} a ${pct(Math.max(t.p_avancar_w0, t.p_avancar_w1))}</td>` +
     t.cartoes.map(v => `<td class="n">${pct(v)}</td>`).join("") + "</tr>").join("");
-  const legend = D.cartoes.map((c, i) => `<span><i style="background:var(--c${i})"></i>${c}</span>`).join("");
   const commit = s.commit ? `commit ${esc(s.commit.commit)}` : "pasta ainda não commitada";
-  return `<div class="panel"><h2>Stage 2 — rodada de abertura prevista</h2>${bracket([round1], {})}</div>
-    ${drawer([round1])}
-    <div class="panel"><h2>Probabilidade de cada cartel final</h2>
-    <p class="note">Previsão ${esc(s.pasta)} · ${commit} · ${s.simulacoes.toLocaleString("pt-BR")} simulações por extremo de w · modelo B0 (só pontos VRS de 02/11).</p>
-    <div class="legend">${legend}<span>azul avança, vermelho é eliminado</span></div>
+  return `<div class="panel"><h2>Previsão oficial (antes do primeiro jogo, congelada)</h2>
+    <p class="note">Previsão ${esc(s.pasta)} · ${commit} · ${s.simulacoes.toLocaleString("pt-BR")} simulações por extremo de w · modelo B0 (só pontos VRS de 02/11).</p>${legend()}
     <div class="scroll"><table><thead><tr><th class="n">Seed</th><th>Time</th><th>Distribuição</th><th class="n">Avança</th><th class="n">Faixa w=0 / w=1</th>${D.cartoes.map(c => `<th class="n">${c}</th>`).join("")}</tr></thead><tbody>${rows}</tbody></table></div>
     <p class="note">* FUT e Astralis começam com substituto; o modelo não ajusta isso. O B0 não atualiza a força dos times com o que se viu no Stage 1, ignora forma, mapas e elencos, e no teste histórico foi confiante demais acima de 80% (amostra pequena).</p></div>`;
 }
 
+function liveScorePanel() {
+  const live = D.stage2_ao_vivo, r = live.resumo;
+  const intro = '<div class="warn">Acompanhamento parcial com o B0 oficial. <b>Não é a avaliação oficial do Stage 2</b>, que é feita ao fim do stage (docs/avaliacao_stage2.md).</div>';
+  if (!r) return `<div class="panel"><h2>Quão certo está o previsor — Stage 2</h2>${intro}<p class="note">Nenhuma partida do Stage 2 no CSV ainda.</p></div>`;
+  const rows = live.rodadas.flat().filter(m => m.previsao).map(m => {
+    const p = m.vencedor === m.a ? m.previsao.p_a : 1 - m.previsao.p_a;
+    return `<tr><td class="n">${m.rodada}</td><td>${esc(m.a)} x ${esc(m.b)}</td><td>Bo${m.bo}</td><td>${esc(m.vencedor)}</td><td class="n">${pct(p)}</td><td class="n">${num(m.previsao.log_loss)}</td><td class="${m.previsao.acertou ? "w" : "l"}">${m.previsao.acertou ? "✓ acertou" : "✗ errou"}</td></tr>`;
+  }).join("");
+  return `<div class="panel"><h2>Quão certo está o previsor — Stage 2</h2>${intro}
+    <div class="kpis">${kpi(`${r.favoritos_que_venceram}/${r.n}`, "favoritos que venceram")}${kpi(num(r.log_loss, 4), `log loss; 50% = ${num(r.log_loss_50, 4)}`)}${kpi(num(r.brier, 4), `Brier; 50% = ${num(r.brier_50, 4)}`)}</div>
+    <div class="scroll"><table><thead><tr><th class="n">R</th><th>Partida</th><th>Formato</th><th>Vencedor</th><th class="n">P(vencedor)</th><th class="n">log loss</th><th>Favorito</th></tr></thead><tbody>${rows}</tbody></table></div></div>`;
+}
+
+function stage2View() {
+  if (st.mode === "sim") return modeBar("Resultados reais ficam fixos; escolha o resto.") + simView();
+  const live = D.stage2_ao_vivo;
+  const status = live.tem_csv
+    ? `${live.partidas_jogadas} partida(s) jogada(s) no CSV do Stage 2.`
+    : "CSV do Stage 2 ainda não criado (data/manual/stage2_results.csv): a rodada 1 é a prevista pela engine.";
+  const div = live.divergencias_engine.length
+    ? `<div class="warn"><b>V2: divergência com a engine.</b> ${live.divergencias_engine.map(esc).join("; ")}</div>` : "";
+  const prev = st.mode === "prev";
+  return modeBar(status) + div +
+    `<div class="panel"><h2>Stage 2 — ao vivo</h2>${bracket(live.rodadas, live.finais, {showP: true, prev})}</div>
+    ${drawer(live.rodadas)}${prev ? liveScorePanel() : updatePanel()}${officialPanel()}`;
+}
+
+/* ---------- times ---------- */
 function teamDetail(rows) {
   const x = rows.find(r => r.time === st.team);
   if (!x) return '<p class="note">Clique em um time.</p>';
@@ -231,18 +346,19 @@ function teamsView() {
     <p class="note">Seeds 1 a 8: convidados, pelo seed pré-evento (VRS de 02/11). Seeds 9 a 16: classificados, pelo seed final do Stage 1.</p></div>`;
 }
 
+/* ---------- eventos ---------- */
 function render() {
+  const scroll = document.querySelector(".sw")?.scrollLeft ?? 0;
+  $("view").innerHTML = st.tab === "teams" ? teamsView() : (st.stage === "1" ? stage1View() : stage2View());
+  const board = document.querySelector(".sw");
+  if (board) board.scrollLeft = scroll;
   for (const [id, value] of [["stages", st.stage], ["tabs", st.tab], ["modes", st.mode]]) {
     const box = $(id);
     if (box) box.querySelectorAll("button").forEach(b => b.classList.toggle("on", b.dataset.v === value));
   }
-  const scroll = document.querySelector(".sw")?.scrollLeft ?? 0;
-  $("view").innerHTML = st.tab === "teams" ? teamsView() : (st.stage === "1" ? stage1Bracket() : stage2Bracket());
-  const board = document.querySelector(".sw");
-  if (board) board.scrollLeft = scroll;
-  const modes = $("modes");
-  if (modes) modes.querySelectorAll("button").forEach(b => b.classList.toggle("on", b.dataset.v === st.mode));
 }
+
+const refresh = () => (st.mode === "sim" && st.tab === "bracket" ? requestSim() : render());
 
 function onClick(event) {
   const button = event.target.closest("#stages button, #tabs button, #modes button");
@@ -250,7 +366,17 @@ function onClick(event) {
     const group = button.parentElement.id;
     st[group === "stages" ? "stage" : group === "tabs" ? "tab" : "mode"] = button.dataset.v;
     if (group === "stages") { st.team = null; st.match = null; }
-    return render();
+    return refresh();
+  }
+  if (event.target.closest("#clear")) { st.picks[st.stage] = []; return requestSim(); }
+  const choice = event.target.closest("[data-pick]");
+  if (choice) {
+    const pick = JSON.parse(choice.dataset.pick), list = st.picks[st.stage];
+    const i = list.findIndex(p => p[0] === pick[0] && p[1] === pick[1] && p[2] === pick[2]);
+    const same = i >= 0 && list[i][3] === pick[3];
+    if (i >= 0) list.splice(i, 1);
+    if (!same) list.push(pick);
+    return requestSim();
   }
   const team = event.target.closest("[data-team]");
   if (team) { st.team = st.team === team.dataset.team ? null : team.dataset.team; return render(); }
@@ -259,7 +385,10 @@ function onClick(event) {
 }
 
 if (!D) {
-  $("view").innerHTML = '<div class="panel"><h2>Sem dados</h2><p>Gere os dados e recarregue: <code>python -m sim.export_site</code></p></div>';
+  const reason = window.SITE_ERROR
+    ? `<div class="warn"><b>Erro ao gerar os dados:</b> ${esc(window.SITE_ERROR)}</div>`
+    : "<p>Gere os dados e recarregue: <code>python -m sim.export_site</code></p>";
+  $("view").innerHTML = `<div class="panel"><h2>Sem dados</h2>${reason}</div>`;
 } else {
   // Parâmetros opcionais na URL, ex.: index.html?stage=1&mode=prev
   const query = new URLSearchParams(location.search);
@@ -267,7 +396,15 @@ if (!D) {
   if (query.has("theme")) document.documentElement.dataset.theme = query.get("theme");
   $("foot").textContent = `Dados gerados em ${D.gerado_em} (UTC) por sim.export_site. Resultados: CSV local do projeto.`;
   document.addEventListener("click", onClick);
-  document.addEventListener("keydown", e => { if (e.key === "Enter" && e.target.matches("[data-match]")) e.target.click(); });
+  document.addEventListener("change", e => {
+    if (e.target.id !== "scratch") return;
+    st.scratch[st.stage] = e.target.checked;
+    st.picks[st.stage] = []; st.sim[st.stage] = null;
+    requestSim();
+  });
+  document.addEventListener("keydown", e => {
+    if ((e.key === "Enter" || e.key === " ") && e.target.matches("[data-match], [data-pick]")) { e.preventDefault(); e.target.click(); }
+  });
   document.addEventListener("mousemove", e => {
     const mark = e.target.closest("[data-tip]"), tip = $("tip");
     if (!mark) { tip.style.display = "none"; return; }
@@ -280,7 +417,7 @@ if (!D) {
     const dark = root.dataset.theme ? root.dataset.theme === "dark" : matchMedia("(prefers-color-scheme: dark)").matches;
     root.dataset.theme = dark ? "light" : "dark";
   });
-  render();
+  refresh();
 }
 </script>
 </body>

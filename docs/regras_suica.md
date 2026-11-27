@@ -120,7 +120,10 @@ deste documento. A tabela abaixo mantém o status pelo texto do rulebook.
   B bane 1; A bane 1; B escolhe o lado no mapa 3.
 - NÃO COBERTO: veto de Bo5; como o melhor seed decide entre A e B.
 
-## 5. Playoffs (ainda não implementado)
+## 5. Playoffs (implementados em `src/sim/playoffs.py`)
+
+Testes em `tests/test_playoffs.py`. O formato vem de `src/sim/format_config.py`
+(`ACTIVE_FORMAT`: `anunciado`, atual, ou `rulebook`).
 
 | Item | Status | Texto |
 |---|---|---|

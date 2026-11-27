@@ -1,6 +1,5 @@
 """Avaliação do Stage 1 e dados do site (dados sintéticos)."""
 
-import json
 import math
 
 import numpy as np
@@ -8,7 +7,7 @@ import pandas as pd
 import pytest
 
 from backtest.v3_evaluation import match_metrics, summarize_matches, team_metrics
-from sim.export_site import final_table, latest_official, round_matches
+from sim.export_site import final_table, round_matches
 from sim.results import ResultRow
 from swiss import advancing_teams, records
 from swiss.rules import FINAL_RECORD_LABELS
@@ -97,17 +96,3 @@ def test_round_matches_flips_probability_to_the_better_seed():
     assert (match["a"], match["b"]) == (better, worse)
     assert (match["placar_a"], match["placar_b"]) == (4, 13)
     assert match["previsao"]["p_a"] == pytest.approx(0.3)
-
-
-def test_latest_official_ignores_live_and_conditioned_folders(tmp_path):
-    modes = {
-        "20260101T000000Z": "Stage 1 completo",
-        "20260102T000000Z": "Stage 1 completo + 1 resultados do Stage 2",
-        "20260103T000000Z": "condicionado: Stage 1 com 30 partidas",
-    }
-    for name, mode in modes.items():
-        (tmp_path / name).mkdir()
-        (tmp_path / name / "meta.json").write_text(json.dumps({"mode": mode}), encoding="utf-8")
-    assert latest_official(tmp_path).name == "20260101T000000Z"
-    with pytest.raises(FileNotFoundError):
-        latest_official(tmp_path / "vazio")

@@ -134,6 +134,17 @@ A previsão antecipada não mudou (mesmos blobs git). SHA-256, nas duas formas:
 - **Bootstraps:** mínimo de 10.000 réplicas, semente registrada em emenda, fixadas antes de
   ver dados.
 
+## 27/11/2026 (instruções da sessão 06)
+
+- **Placares confirmados:** rodada 5 do Stage 1 (M80 1-2 100 Thieves, Imperial 2-1
+  Wildcard, Lynn Vision 2-0 HEROIC) e PARIVISION 9-13 FlyQuest (conferido na HLTV pelo
+  Larry).
+- **Resultados do Major:** vêm do CSV do Larry; Wikipedia só como conferência secundária.
+- **Congelados:** modelos, engine e a previsão em
+  `predictions/stage2/20261127T161221Z`. Atualizações por rodada em
+  `predictions/stage2/round<N>/`, commitadas só quando ele pedir.
+- **Formato do Stage 3 e dos playoffs:** parametrizado por flag até haver fonte oficial.
+
 ## Anteriores
 - Escopo temporal: a partir de 2025-06-01 (`claude/fontes-de-dados.md`).
 - Dashboard local por enquanto.
