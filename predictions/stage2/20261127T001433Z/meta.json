@@ -1,0 +1,28 @@
+{
+  "generated_at_utc": "2026-11-27T00:14:33+00:00",
+  "generated_at_local": "2026-11-26T21:14:33-03:00",
+  "git_commit": "b4135ace1f6a5a1ee7e8afc39637d0b54269a3a3",
+  "git_uncommitted_code": false,
+  "n_sims": 200000,
+  "rng_seed": 20261127,
+  "model": "B0",
+  "format_rule": "faixa",
+  "variants": [
+    {
+      "w": 0.0,
+      "beta": 0.15576013722622684
+    },
+    {
+      "w": 1.0,
+      "beta": 0.2360804759216661
+    }
+  ],
+  "transform": "points",
+  "stage1_csv_sha256": "885be681935c0d18a4cc1089f9159670af7c0ac05054cb1281d25bbfdb300af7",
+  "stage2_csv_sha256": null,
+  "stage1_matches_decided": 30,
+  "mode": "condicionado: Stage 1 com 30 partidas decididas, restante simulado",
+  "rule_notes": [],
+  "seeds_file_sha256": "e6670b19c7fa0f68d75f5aed40e64c071cb79d7928c97d30b20ba0b0d28a9cb6",
+  "params_file_sha256": "c2051462994d7ceb0f490e1a183c1f98557cff23c74327109c838b2ebfd6e03a"
+}
