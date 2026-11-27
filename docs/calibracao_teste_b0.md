@@ -34,5 +34,6 @@ Dois intervalos de 95% para o observado: Wilson (supõe partidas independentes) 
 | 80%+ | 22 | 84.4% | 59.1% | [38.7%; 76.7%] | [36.8%; 78.3%] | -25.3 pp [-46.7; -5.8] |
 
 ## Leitura
+- O valor da sessão 03 para a faixa acima de 80% (D21, 84,7% previsto) é a linha `w=0`. A manchete usa a média de w=0 e w=1 (84,6%). São as mesmas 22 partidas e o mesmo observado; só muda a probabilidade prevista.
 - São quatro faixas e três versões do modelo: algum intervalo pode excluir o previsto por acaso (sem correção para comparações múltiplas).
 - A faixa 80%+ tem poucas partidas; o bootstrap com poucos dias é instável.

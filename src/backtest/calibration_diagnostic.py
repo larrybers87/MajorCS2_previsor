@@ -117,6 +117,9 @@ def render(data: pd.DataFrame, seed: int = RNG_SEED) -> str:
     lines += [
         "",
         "## Leitura",
+        "- O valor da sessão 03 para a faixa acima de 80% (D21, 84,7% previsto) é a linha "
+        "`w=0`. A manchete usa a média de w=0 e w=1 (84,6%). São as mesmas 22 partidas e o "
+        "mesmo observado; só muda a probabilidade prevista.",
         "- São quatro faixas e três versões do modelo: algum intervalo pode excluir o "
         "previsto por acaso (sem correção para comparações múltiplas).",
         "- A faixa 80%+ tem poucas partidas; o bootstrap com poucos dias é instável.",
