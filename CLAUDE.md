@@ -35,7 +35,10 @@ python -m swiss.exhaustive_check        # verificação exaustiva dos emparelham
 git clone --depth 1 https://github.com/ValveSoftware/counter-strike_regional_standings ../_external/counter-strike_regional_standings
 python -m ingest.seeds                  # data/processed/seeds_singapore.csv
 python -m ingest.vrs_matches            # data/processed/matches.parquet
-python -m backtest.b0_calibration       # data/processed/b0_params.json e docs/b0_calibracao.md
+python -m backtest.b0_calibration       # B0 congelado (V3) e docs/b0_calibracao.md
+python -m backtest.h10_format           # modelo do Stage 2 e docs/h10_verossimilhanca.md
+python -m backtest.b1_selection         # B1 contra B0 e docs/b1_avaliacao.md
+python -m sim.b1_ratings --stage1 data/manual/stage1_results.csv   # ratings B1 do Major
 python -m sim.v3_stage1 --results data/manual/stage1_results.csv
 predict_stage2 --stage1 data/manual/stage1_results.csv [--stage2 data/manual/stage2_results.csv]
 predict_stage2 --conditioned [--stage1 <CSV parcial>]
@@ -75,6 +78,10 @@ predict_stage2 --conditioned [--stage1 <CSV parcial>]
    antes da primeira partida.
 5. Repositório público; push de `main` autorizado.
 6. D15 fechada: THE ONE = 1win e GOSH = BC.Game, mapeados pelo elenco.
+- Modelo do Stage 2: **B0** com a regra de formato (faixa w=0/w=1); o B1 não atingiu o
+  critério pré-registrado e fica para o Stage 3.
+- Liquipedia: os termos dizem que a API MediaWiki não é suportada para fins que não sejam
+  edição; não usar sem nova decisão (D24).
 - Dados a partir de 2025-06-01 com decaimento temporal (half-life a testar a partir do
   B1); dashboard local; aceite de modelo por log loss no backtest; calibração
   obrigatória; sem rede neural no escopo inicial.

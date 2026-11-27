@@ -170,4 +170,10 @@ desqualificação, erro do organizador). A engine levanta `NoValidPairingError`.
 | Bo1/Bo3 | `rules.is_decider_match`, `rules.best_of` | `test_decider_matches_are_best_of_three` |
 | Invariantes | engine | `test_invariants_over_random_stages` |
 | Versão vetorizada = referência | `simulate._pair_round_batch` | `test_vectorized_pairing_matches_reference_engine` |
-| Emparelhamentos reais (V2) | `engine.check_pairings` | `test_v2_reproduces_real_pairings` (**skip**, sem dados) |
+| Emparelhamentos reais (V2) | `engine.check_pairings` | `tests/test_v2_real.py` (precisa do CSV local) |
+
+### V2 com o Stage 1 deste Major (26/11/2026)
+Os **33 confrontos** das rodadas 1 a 5 coincidem com os da engine (30 jogados e os 3
+anunciados da rodada 5). Isso confirma H4 e o uso e a direção do Buchholz; **não**
+testa H1 (o beco sem saída não ocorreu), nem distingue a tabela das rodadas 4-5 do
+"melhor x pior", nem testa H3 e H8.

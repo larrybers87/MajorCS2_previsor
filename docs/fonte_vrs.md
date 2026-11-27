@@ -90,6 +90,8 @@ Event Weight, Bounty Collected, Opponent Network, LAN Wins, H2H Adj., Roster`.
   conferir com o histórico completo do git.
 - **Viés de seleção:** a união usa snapshots posteriores à partida. No treino do B0 só 2
   de 5.196 partidas são vistas por um único lado; sem elas o beta vai de 0,1558 a 0,1557.
+- **Identidade:** os seeds do Major são ligados ao VRS pelo elenco
+  (`sim.singapore2026.ROSTERS`), não pelo nome: "the ONE" (#318) é outro time.
 - **`lan` não pode ser feature:** só aparece em vitórias que entram nas 10 melhores do
   time, logo depende do resultado e do futuro.
 - **Lacunas:** nada de 02/11 a 23/11/2026 (não há snapshot posterior); rosters que nunca
