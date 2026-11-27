@@ -1,0 +1,26 @@
+{
+  "generated_at_utc": "2026-11-27T00:16:03+00:00",
+  "generated_at_local": "2026-11-26T21:16:03-03:00",
+  "git_commit": "5eee72b4e7b23eb3f992f21d07aa61aea7958ef7",
+  "git_uncommitted_code": false,
+  "label": "RETROSPECTIVO",
+  "n_sims": 200000,
+  "rng_seed": 20261124,
+  "beta": 0.155760077071854,
+  "transform": "points",
+  "results_csv_sha256": "885be681935c0d18a4cc1089f9159670af7c0ac05054cb1281d25bbfdb300af7",
+  "scores": {
+    "partidas": 30,
+    "log_loss": 0.6734306414512473,
+    "log_loss_erro_padrao": 0.02265152036742885,
+    "log_loss_50": 0.6931471805599453,
+    "brier": 0.24037685562833772,
+    "brier_50": 0.25,
+    "brier_maior_vrs_vence": 0.36666666666666664,
+    "acerto_do_favorito": 0.6333333333333333
+  },
+  "pairing_mismatches": [],
+  "format_notes": [],
+  "seeds_file_sha256": "e6670b19c7fa0f68d75f5aed40e64c071cb79d7928c97d30b20ba0b0d28a9cb6",
+  "params_file_sha256": "121fa78d172da30c55e5f05890464c19ea3f3284916f9c70b661809916df5f6d"
+}
