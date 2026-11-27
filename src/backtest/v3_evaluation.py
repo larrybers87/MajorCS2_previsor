@@ -247,7 +247,7 @@ def report(data: dict) -> str:
         "- Com n = 30 (ou 33) isto é **diagnóstico**. Não ordena modelos, e as partidas e os "
         "times de um torneio não são independentes.",
         "- B0 e B1 lado a lado nas 33 partidas, também retrospectivo, estão em "
-        "`predictions/v3_stage1/20261127T163922Z/summary.md`. A média B0/B1 neste Major "
+        "`predictions/v3_stage1/20261127T165555Z/summary.md`. A média B0/B1 neste Major "
         "**não** foi calculada (reservada à checagem pré-registrada do Stage 3).",
         "",
         "## Por partida",
