@@ -77,17 +77,35 @@ Torneios simulados pelo próprio modelo oficial: 200.000 por extremo de w, semen
 
 ## 5. Leitura
 
-Redação **PROPOSTA** em 27/11, antes dos resultados (não está no protocolo nem nas
-emendas; confirmar):
+Regra quantitativa definida pelo Larry em 27/11/2026, antes do primeiro jogo do Stage 2.
+Decide só o rótulo; as métricas e o IC por bootstrap das emendas continuam a ser
+relatados.
 
-- Diferença com IC 95% **inteiramente abaixo de zero**: "o modelo teve log loss menor que a
-  referência neste stage". **Qualquer outro caso:** "não distinguível" (ou "pior", se o IC
-  estiver inteiramente acima de zero).
+Para cada referência, em cada partida decidida `i`:
+`d_i = log loss do modelo − log loss da referência`.
+
+- `d` = média dos `d_i`; `n` = número de partidas.
+- `EP` = desvio padrão amostral dos `d_i` (divisor `n − 1`) dividido pela raiz de `n`
+  (definição operacional: erro padrão da diferença **pareada**).
+- **"Melhor que a referência"**: somente se `d < −2 × EP`, ou seja, o log loss do modelo é
+  menor que o da referência por **mais** de 2 erros padrão.
+- **"Inconclusivo"**: qualquer outro caso, inclusive diferença igual a 2 EP e inclusive
+  modelo **pior** por mais de 2 EP.
+
+| Contra | n | d | EP | −2 × EP | Leitura |
+|---|---:|---:|---:|---:|---|
+| 50% | ⟨⟩ | ⟨⟩ | ⟨⟩ | ⟨⟩ | ⟨melhor que a referência / inconclusivo⟩ |
+| Maior VRS fixo | ⟨⟩ | ⟨⟩ | ⟨⟩ | ⟨⟩ | ⟨melhor que a referência / inconclusivo⟩ |
+
+- Só o log loss recebe rótulo. Brier, log score dos cartéis e percentil são relatados sem
+  rótulo; se o IC por bootstrap sugerir outra coisa, vale o rótulo desta regra e a
+  divergência é mencionada.
 - O percentil só diz se o observado é compatível com o modelo; percentil dentro de
   2,5% a 97,5% não mostra que o modelo é bom.
-- Um torneio, partidas e times dependentes: nada aqui ordena modelos.
+- O EP trata as partidas como independentes, o que não são. Um torneio: o rótulo vale só
+  para este stage e não ordena modelos.
 
-⟨texto da leitura⟩
+⟨observações⟩
 
 ## 6. Fora desta avaliação
 - Atualizações por rodada (`predictions/stage2/round<N>/`): listar quais foram enviadas
