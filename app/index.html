@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Previsor Major CS2</title>
+<style>
+/* Visual baseado em docs/referencia_ui (v2). Só desenha: nenhum cálculo de modelo aqui. */
+:root{color-scheme:light;--bg:#f2f3f5;--pn:#ffffff;--pn2:#eceef1;--ink:#15181c;--ink2:#4a525b;--ink3:#6b737c;--ln:#dcdfe3;--ln2:#c3c8ce;--acc:#1b6fd1;--ok:#1f7a35;--bad:#b8322c;--grnbg:rgba(46,139,61,.14);--redbg:rgba(179,54,58,.12);--grn:#2e8b3d;--red:#b3363a;--warnbg:rgba(237,161,0,.16);--warnln:rgba(190,128,0,.5);
+--c0:#0e3d7e;--c1:#2370cd;--c2:#84b9f3;--c3:#f59a9a;--c4:#dc3c3d;--c5:#8c1c1d}
+@media (prefers-color-scheme:dark){:root:not([data-theme=light]){color-scheme:dark;--bg:#14171b;--pn:#1d2127;--pn2:#242a31;--ink:#e8eaed;--ink2:#a9b0b8;--ink3:#8a929b;--ln:#2d343c;--ln2:#3d4650;--acc:#5aa9ff;--ok:#4cc16a;--bad:#e5645f;--grnbg:rgba(46,139,61,.26);--redbg:rgba(179,54,58,.28);--warnbg:rgba(237,161,0,.14);--warnln:rgba(237,161,0,.4);
+--c0:#b6d5f8;--c1:#4c9bee;--c2:#1c62ba;--c3:#a53334;--c4:#e8605f;--c5:#f8c0c0}}
+:root[data-theme=dark]{color-scheme:dark;--bg:#14171b;--pn:#1d2127;--pn2:#242a31;--ink:#e8eaed;--ink2:#a9b0b8;--ink3:#8a929b;--ln:#2d343c;--ln2:#3d4650;--acc:#5aa9ff;--ok:#4cc16a;--bad:#e5645f;--grnbg:rgba(46,139,61,.26);--redbg:rgba(179,54,58,.28);--warnbg:rgba(237,161,0,.14);--warnln:rgba(237,161,0,.4);
+--c0:#b6d5f8;--c1:#4c9bee;--c2:#1c62ba;--c3:#a53334;--c4:#e8605f;--c5:#f8c0c0}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:13px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+.wrap{max-width:1320px;margin:0 auto;padding:16px 16px 50px}
+.top{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:10px}
+h1{font-size:19px;font-weight:600;margin:0}.sub,.note{color:var(--ink2);font-size:12px}
+.pill{display:inline-flex;border:1px solid var(--ln2);border-radius:6px;overflow:hidden}
+.pill button{border:0;border-radius:0;border-right:1px solid var(--ln2)}.pill button:last-child{border-right:0}
+button{font:inherit;color:var(--ink);background:var(--pn2);border:1px solid var(--ln2);border-radius:6px;padding:5px 12px;cursor:pointer}
+button.on{background:var(--acc);border-color:var(--acc);color:#fff}
+button:focus-visible,[tabindex]:focus-visible{outline:2px solid var(--acc);outline-offset:1px}
+.tabs{display:flex;gap:2px;border-bottom:1px solid var(--ln);margin:10px 0 14px}
+.tabs button{border:0;border-bottom:2px solid transparent;border-radius:0;background:none;padding:8px 14px;color:var(--ink2)}
+.tabs button.on{color:var(--ink);border-bottom-color:var(--acc);background:none}
+.panel{background:var(--pn);border:1px solid var(--ln);border-radius:10px;padding:14px 16px;margin-bottom:14px;min-width:0}
+.panel h2{font-size:12px;font-weight:600;color:var(--ink2);text-transform:uppercase;letter-spacing:.04em;margin:0 0 10px}
+.tool{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:12px}
+.sw{display:grid;grid-template-columns:repeat(5,minmax(175px,1fr)) minmax(190px,1.1fr);gap:14px;overflow-x:auto;padding:4px 2px 10px}
+.gl{font-size:15px;font-weight:600;margin:0 0 6px 2px}.grp{margin-bottom:16px}
+.mc{background:var(--pn2);border:1px solid var(--ln);border-radius:6px;margin-bottom:6px;overflow:hidden;cursor:pointer}
+.mc.pend{border-style:dashed;border-color:var(--ln2)}.mc.msel{outline:2px solid var(--acc)}
+.rw{display:grid;grid-template-columns:20px minmax(0,1fr) auto auto;gap:6px;align-items:center;padding:4px 8px}
+.rw+.rw{border-top:1px solid var(--ln)}
+.rw.lose{color:var(--ink3)}.rw.win .nm{font-weight:600}.rw.tsel{background:rgba(90,169,255,.18);box-shadow:inset 3px 0 0 var(--acc)}
+.nm{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lg{width:20px;height:20px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:#fff;flex:none;vertical-align:middle}
+.sc{font-variant-numeric:tabular-nums;font-weight:600;min-width:18px;text-align:right}.rw.win .sc{color:var(--ok)}
+.pc{font-variant-numeric:tabular-nums;font-size:11px;color:var(--ink2)}
+.mf{display:flex;justify-content:space-between;gap:6px;font-size:10px;color:var(--ink3);padding:2px 8px;border-top:1px solid var(--ln)}
+.bdg{font-size:10px;padding:0 6px;border-radius:8px;margin-right:5px;border:1px solid currentColor}.bdg.ok{color:var(--ok)}.bdg.no{color:var(--bad)}.bdg.pre{color:var(--acc)}
+.dim .mc:not(.hit){opacity:.28}
+.fbox{border-radius:8px;padding:8px 10px;margin-bottom:14px}.fbox.g{background:var(--grnbg);border:1px solid var(--grn)}.fbox.r{background:var(--redbg);border:1px solid var(--red)}
+.fbox h4{margin:0 0 6px;text-align:center;font-size:14px}.chips{display:flex;flex-wrap:wrap;gap:6px;justify-content:center}
+.chip{display:flex;align-items:center;gap:5px;background:var(--pn);border:0;border-radius:14px;padding:2px 8px 2px 3px;font-size:12px}
+.chip.q{padding:2px 10px;color:var(--ink3)}
+.scroll{overflow-x:auto}
+table{border-collapse:collapse;width:100%}th,td{padding:5px 8px;text-align:left;border-bottom:1px solid var(--ln);font-size:13px;white-space:nowrap}
+th{font-size:11px;color:var(--ink3);font-weight:500}td.n,th.n{text-align:right;font-variant-numeric:tabular-nums}
+tbody tr.pick{cursor:pointer}tbody tr.pick:hover{background:var(--pn2)}tr.tsel{background:rgba(90,169,255,.18)}
+.stack{display:flex;gap:2px;height:14px;min-width:190px}.stack div{border-radius:2px;min-width:0}
+.legend{display:flex;flex-wrap:wrap;gap:12px;font-size:12px;color:var(--ink2);margin:6px 0 10px}.legend span{display:flex;align-items:center;gap:5px}.legend i{width:10px;height:10px;border-radius:2px}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;margin-bottom:12px}
+.kpi{background:var(--pn2);border-radius:8px;padding:9px 12px}.kpi b{display:block;font-size:20px;font-weight:600}.kpi span{font-size:11px;color:var(--ink2);display:block}
+.warn{background:var(--warnbg);border:1px solid var(--warnln);border-radius:8px;padding:8px 12px;font-size:12px;margin:0 0 12px}
+.two{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:14px}@media(max-width:950px){.two{grid-template-columns:1fr}}
+.pth div{display:grid;grid-template-columns:34px minmax(0,1fr) auto;gap:8px;padding:4px 0;border-bottom:1px solid var(--ln)}
+.w{color:var(--ok);font-weight:600}.l{color:var(--ink3)}
+#tip{position:fixed;pointer-events:none;background:var(--pn);border:1px solid var(--ln2);border-radius:6px;padding:5px 9px;font-size:12px;display:none;z-index:9;box-shadow:0 4px 14px rgba(0,0,0,.25)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <h1>Previsor Major CS2</h1><span class="sub">PGL Major Singapore 2026 · fase suíça</span>
+    <span style="flex:1"></span>
+    <div class="pill" id="stages" role="group" aria-label="Stage"><button data-v="1">Stage 1</button><button data-v="2">Stage 2</button></div>
+    <button id="theme">Tema</button>
+  </div>
+  <div class="tabs" id="tabs"><button data-v="bracket">Chave suíça</button><button data-v="teams">Times</button></div>
+  <div id="view"></div>
+  <p class="note" id="foot"></p>
+</div>
+<div id="tip" role="tooltip"></div>
+<script src="../data/processed/site_data.js"></script>
+<script>
+"use strict";
+const D = window.SITE_DATA;
+const st = {stage: "2", tab: "bracket", mode: "det", team: null, match: null};
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const pct = (v, d = 1) => (100 * v).toFixed(d).replace(".", ",") + "%";
+const num = (v, d = 3) => v.toFixed(d).replace(".", ",");
+const hue = s => { let h = 0; for (const c of s) h = (h * 31 + c.charCodeAt(0)) % 360; return h; };
+const logo = n => `<span class="lg" aria-hidden="true" style="background:hsl(${hue(n)} 45% 36%)">${esc(n.split(" ").map(w => w[0]).join("").slice(0, 3).toUpperCase())}</span>`;
+const SUBS = {"FUT": "começa com substituto", "Astralis": "começa com substituto"};
+
+function card(m) {
+  const prev = st.mode === "prev" && m.previsao;
+  const done = m.vencedor !== null && m.vencedor !== undefined;
+  const row = (team, score, p) => {
+    const cls = done ? (m.vencedor === team ? "win" : "lose") : "";
+    return `<div class="rw ${cls}${st.team === team ? " tsel" : ""}">${logo(team)}<span class="nm">${esc(team)}</span>` +
+      `<span class="pc">${p === null ? "" : pct(p, 0)}</span><span class="sc">${done ? score : ""}</span></div>`;
+  };
+  const pa = st.stage === "2" ? m.p_a : (prev ? m.previsao.p_a : null);
+  let badge = "";
+  if (prev) {
+    badge = (m.previsao.tipo === "previo" ? '<span class="bdg pre">prévia</span>' : "") +
+      `<span class="bdg ${m.previsao.acertou ? "ok" : "no"}">${m.previsao.acertou ? "✓ acertou" : "✗ errou"}</span>`;
+  }
+  const key = `${m.a}|${m.b}`;
+  const hit = st.team === m.a || st.team === m.b;
+  return `<div class="mc${done ? "" : " pend"}${hit ? " hit" : ""}${st.match === key ? " msel" : ""}" tabindex="0" data-match="${esc(key)}">` +
+    row(m.a, m.placar_a, pa) + row(m.b, m.placar_b, pa === null ? null : 1 - pa) +
+    `<div class="mf"><span>R${m.rodada} · Bo${m.bo}</span><span>${badge}</span></div></div>`;
+}
+
+function finalBox(label, teams, expected) {
+  const chips = teams.map(t => `<button class="chip" data-team="${esc(t)}">${logo(t)}${esc(t)}</button>`).join("");
+  const unknown = '<span class="chip q">?</span>'.repeat(Math.max(0, expected - teams.length));
+  return `<div class="fbox ${label[0] === "3" ? "g" : "r"}"><h4>${label.replace("-", ":")}</h4><div class="chips">${chips}${unknown}</div></div>`;
+}
+
+function bracket(rounds, finals) {
+  const expected = {"3-0": 2, "3-1": 3, "3-2": 3, "2-3": 3, "1-3": 3, "0-3": 2};
+  let html = "";
+  for (let r = 0; r < 5; r++) {
+    html += "<div>";
+    const matches = rounds[r];
+    if (!matches) {
+      html += `<div class="grp"><div class="gl">Rodada ${r + 1}</div><div class="note">Confrontos definidos pelos resultados anteriores.</div></div>`;
+    } else {
+      const groups = new Map();
+      for (const m of matches) {
+        const k = m.cartel.join(":");
+        if (!groups.has(k)) groups.set(k, []);
+        groups.get(k).push(m);
+      }
+      for (const [k, list] of groups) html += `<div class="grp"><div class="gl">${k}</div>${list.map(card).join("")}</div>`;
+    }
+    html += "</div>";
+  }
+  html += "<div>" + D.cartoes.map(c => finalBox(c, finals[c] || [], expected[c])).join("") + "</div>";
+  return `<div class="sw${st.team ? " dim" : ""}">${html}</div>`;
+}
+
+function drawer(rounds) {
+  if (!st.match) return "";
+  const m = rounds.flat().find(x => `${x.a}|${x.b}` === st.match);
+  if (!m) return "";
+  let text = `<p><b>${esc(m.a)}</b> (VRS ${D.times[m.a].vrs}) x <b>${esc(m.b)}</b> (VRS ${D.times[m.b].vrs})</p>`;
+  if (m.vencedor) text += `<p>Resultado: <b>${esc(m.vencedor)}</b> (${m.placar_a} a ${m.placar_b}, ${m.bo === 1 ? "rounds" : "mapas"})</p>`;
+  const p = m.previsao;
+  if (p) {
+    text += `<p>Modelo antes: ${esc(m.a)} ${pct(p.p_a)}, ${esc(m.b)} ${pct(1 - p.p_a)} · log loss ${num(p.log_loss)} · Brier ${num(p.brier)}</p>` +
+      `<p class="note">${p.tipo === "previo" ? "Previsão enviada ao GitHub antes da partida (média de w=0 e w=1)." : "Retrospectivo: calculado depois da partida (B0, w=0)."}</p>`;
+  } else if (m.p_a !== undefined) {
+    text += `<p>Previsão: ${esc(m.a)} ${pct(m.p_a)}, ${esc(m.b)} ${pct(1 - m.p_a)} (Bo${m.bo})</p>`;
+  }
+  return `<div class="panel"><h2>Partida · Rodada ${m.rodada} · Bo${m.bo}</h2>${text}</div>`;
+}
+
+function scorePanel() {
+  const e = D.avaliacao, r = e.retrospectivo.resumo, p = e.previo_r5.resumo, t = e.times.resumo;
+  const kpi = (value, label) => `<div class="kpi"><b>${value}</b><span>${label}</span></div>`;
+  const teams = e.times.linhas.slice().sort((a, b) => b.p_avancar - a.p_avancar).map(x =>
+    `<tr class="pick${st.team === x.time ? " tsel" : ""}" data-team="${esc(x.time)}"><td>${logo(x.time)} ${esc(x.time)}</td><td class="n">${pct(x.p_avancar)}</td>` +
+    `<td>${x.previsto_avanca ? "entre os 8" : "fora"}</td><td class="${x.avancou ? "w" : "l"}">${x.cartel} ${x.avancou ? "✓ avançou" : "eliminado"}</td>` +
+    `<td class="n">${pct(x.p_cartel)}</td><td class="n">${num(x.log_score)}</td><td class="n">${num(x.log_score_sem_informacao)}</td></tr>`).join("");
+  return `<div class="panel"><h2>Quão certo foi o previsor — Stage 1</h2>
+    <div class="warn"><b>Quase tudo aqui é retrospectivo.</b> Nenhuma previsão foi commitada antes do primeiro jogo do Stage 1. Rodadas 1 a 4 e cartéis foram calculados depois dos jogos; só as 3 partidas da rodada 5 (marcadas “prévia”) são previsão de verdade. Com tão poucas partidas isto é diagnóstico e não compara modelos.</div>
+    <h2>Retrospectivo · rodadas 1 a 4 (B0, w=0)</h2>
+    <div class="kpis">${kpi(`${r.favoritos_que_venceram}/${r.n}`, "favoritos que venceram")}
+      ${kpi(num(r.log_loss, 4), `log loss (erro padrão ${num(r.log_loss_erro_padrao)}); 50% = ${num(r.log_loss_50, 4)}`)}
+      ${kpi(num(r.brier, 4), `Brier; 50% = ${num(r.brier_50, 4)}`)}
+      ${kpi(`${t.classificados_acertados}/${t.classificados_total}`, `classificados acertados; ao acaso: ${t.classificados_esperados_ao_acaso}`)}
+      ${kpi(num(t.log_score_cartel_soma, 2), `log score dos cartéis, soma (sem informação: ${num(t.log_score_sem_informacao_soma, 2)}); menor é melhor`)}</div>
+    <h2>Prévio · rodada 5 (média de w=0 e w=1)</h2>
+    <div class="kpis">${kpi(`${p.favoritos_que_venceram}/${p.n}`, "favoritos que venceram")}
+      ${kpi(num(p.log_loss, 4), `log loss; 50% = ${num(p.log_loss_50, 4)}`)}
+      ${kpi(num(p.brier, 4), `Brier; 50% = ${num(p.brier_50, 4)}`)}</div>
+    <h2>Por time (previsão desde a rodada 1, retrospectiva)</h2>
+    <div class="scroll"><table><thead><tr><th>Time</th><th class="n">P(avançar)</th><th>Escolha do modelo</th><th>Observado</th><th class="n">P(cartel observado)</th><th class="n">log score</th><th class="n">sem informação</th></tr></thead><tbody>${teams}</tbody></table></div></div>`;
+}
+
+function stage1Bracket() {
+  const finals = {};
+  for (const x of D.stage1.classificacao) (finals[x.cartel] = finals[x.cartel] || []).push(x.time);
+  const div = D.stage1.divergencias_engine;
+  return `<div class="tool"><div class="pill" id="modes" role="group" aria-label="Modo"><button data-v="det">Detalhado</button><button data-v="prev">Previsor</button></div>
+      <span class="note">Clique em um time dos quadros finais ou em uma partida. ${div.length ? "Há divergências com a engine." : "A engine reproduz todos os confrontos reais."}</span></div>
+    <div class="panel"><h2>Stage 1 — resultados</h2>${bracket(D.stage1.rodadas, finals)}</div>
+    ${drawer(D.stage1.rodadas)}${st.mode === "prev" ? scorePanel() : ""}`;
+}
+
+function stackBar(t) {
+  return `<div class="stack">${t.cartoes.map((v, i) =>
+    `<div style="flex:${v} 1 0;background:var(--c${i})" data-tip="${esc(t.time)} · ${D.cartoes[i]}: ${pct(v)}"></div>`).join("")}</div>`;
+}
+
+function stage2Bracket() {
+  const s = D.stage2;
+  const round1 = s.abertura.map(m => ({rodada: 1, a: m.a, b: m.b, cartel: [0, 0], bo: m.bo, p_a: m.p_a}));
+  const rows = s.times.slice().sort((a, b) => b.p_avancar - a.p_avancar).map(t =>
+    `<tr class="pick${st.team === t.time ? " tsel" : ""}" data-team="${esc(t.time)}"><td class="n">${t.seed}</td><td>${logo(t.time)} ${esc(t.time)}${SUBS[t.time] ? " *" : ""}</td>` +
+    `<td>${stackBar(t)}</td><td class="n"><b>${pct(t.p_avancar)}</b></td><td class="n">${pct(Math.min(t.p_avancar_w0, t.p_avancar_w1))} a ${pct(Math.max(t.p_avancar_w0, t.p_avancar_w1))}</td>` +
+    t.cartoes.map(v => `<td class="n">${pct(v)}</td>`).join("") + "</tr>").join("");
+  const legend = D.cartoes.map((c, i) => `<span><i style="background:var(--c${i})"></i>${c}</span>`).join("");
+  const commit = s.commit ? `commit ${esc(s.commit.commit)}` : "pasta ainda não commitada";
+  return `<div class="panel"><h2>Stage 2 — rodada de abertura prevista</h2>${bracket([round1], {})}</div>
+    ${drawer([round1])}
+    <div class="panel"><h2>Probabilidade de cada cartel final</h2>
+    <p class="note">Previsão ${esc(s.pasta)} · ${commit} · ${s.simulacoes.toLocaleString("pt-BR")} simulações por extremo de w · modelo B0 (só pontos VRS de 02/11).</p>
+    <div class="legend">${legend}<span>azul avança, vermelho é eliminado</span></div>
+    <div class="scroll"><table><thead><tr><th class="n">Seed</th><th>Time</th><th>Distribuição</th><th class="n">Avança</th><th class="n">Faixa w=0 / w=1</th>${D.cartoes.map(c => `<th class="n">${c}</th>`).join("")}</tr></thead><tbody>${rows}</tbody></table></div>
+    <p class="note">* FUT e Astralis começam com substituto; o modelo não ajusta isso. O B0 não atualiza a força dos times com o que se viu no Stage 1, ignora forma, mapas e elencos, e no teste histórico foi confiante demais acima de 80% (amostra pequena).</p></div>`;
+}
+
+function teamDetail(rows) {
+  const x = rows.find(r => r.time === st.team);
+  if (!x) return '<p class="note">Clique em um time.</p>';
+  const path = x.caminho.map(m => `<div><span>R${m.rodada}</span><span>contra <b>${esc(m.adversario)}</b></span><span class="${m.venceu ? "w" : "l"}">${m.venceu ? "V" : "D"}</span></div>`).join("");
+  return `<p>${logo(x.time)} <b>${esc(x.time)}</b> · seed inicial ${x.seed_inicial} · VRS ${D.times[x.time].vrs}</p><div class="pth">${path}</div>`;
+}
+
+function teamsView() {
+  if (st.stage === "1") {
+    const rows = D.stage1.classificacao.map(x =>
+      `<tr class="pick${st.team === x.time ? " tsel" : ""}" data-team="${esc(x.time)}"><td class="n">${x.posicao}</td><td>${logo(x.time)} ${esc(x.time)}</td><td>${x.cartel}</td>` +
+      `<td class="n">${x.difficulty > 0 ? "+" : ""}${x.difficulty}</td><td class="n">${x.seed_inicial}</td><td class="${x.avancou ? "w" : "l"}">${x.avancou ? "Stage 2, seed " + x.seed_seguinte : "eliminado"}</td></tr>`).join("");
+    return `<div class="panel"><h2>Classificação final do Stage 1</h2><div class="two"><div class="scroll"><table><thead><tr><th class="n">#</th><th>Time</th><th>V-D</th><th class="n">Difficulty</th><th class="n">Seed inicial</th><th>Situação</th></tr></thead><tbody>${rows}</tbody></table></div><div>${teamDetail(D.stage1.classificacao)}</div></div>
+      <p class="note">Ordem do regulamento: cartel, depois Difficulty (soma de V−D dos adversários), depois seed inicial.</p></div>`;
+  }
+  const rows = D.stage2.times.map(t =>
+    `<tr><td class="n">${t.seed}</td><td>${logo(t.time)} ${esc(t.time)}</td><td>${t.origem}</td><td class="n">${t.vrs_pontos}</td><td class="n">${t.seed_pre_evento}</td>` +
+    `<td>${t.origem === "Stage 1" ? `${t.stage1_cartel} · Difficulty ${t.stage1_difficulty} · seed inicial ${t.stage1_seed_inicial}` : "—"}</td></tr>`).join("");
+  return `<div class="panel"><h2>Seeds do Stage 2</h2><div class="scroll"><table><thead><tr><th class="n">Seed</th><th>Time</th><th>Origem</th><th class="n">VRS</th><th class="n">Seed pré-evento</th><th>No Stage 1</th></tr></thead><tbody>${rows}</tbody></table></div>
+    <p class="note">Seeds 1 a 8: convidados, pelo seed pré-evento (VRS de 02/11). Seeds 9 a 16: classificados, pelo seed final do Stage 1.</p></div>`;
+}
+
+function render() {
+  for (const [id, value] of [["stages", st.stage], ["tabs", st.tab], ["modes", st.mode]]) {
+    const box = $(id);
+    if (box) box.querySelectorAll("button").forEach(b => b.classList.toggle("on", b.dataset.v === value));
+  }
+  const scroll = document.querySelector(".sw")?.scrollLeft ?? 0;
+  $("view").innerHTML = st.tab === "teams" ? teamsView() : (st.stage === "1" ? stage1Bracket() : stage2Bracket());
+  const board = document.querySelector(".sw");
+  if (board) board.scrollLeft = scroll;
+  const modes = $("modes");
+  if (modes) modes.querySelectorAll("button").forEach(b => b.classList.toggle("on", b.dataset.v === st.mode));
+}
+
+function onClick(event) {
+  const button = event.target.closest("#stages button, #tabs button, #modes button");
+  if (button) {
+    const group = button.parentElement.id;
+    st[group === "stages" ? "stage" : group === "tabs" ? "tab" : "mode"] = button.dataset.v;
+    if (group === "stages") { st.team = null; st.match = null; }
+    return render();
+  }
+  const team = event.target.closest("[data-team]");
+  if (team) { st.team = st.team === team.dataset.team ? null : team.dataset.team; return render(); }
+  const match = event.target.closest("[data-match]");
+  if (match) { st.match = st.match === match.dataset.match ? null : match.dataset.match; return render(); }
+}
+
+if (!D) {
+  $("view").innerHTML = '<div class="panel"><h2>Sem dados</h2><p>Gere os dados e recarregue: <code>python -m sim.export_site</code></p></div>';
+} else {
+  // Parâmetros opcionais na URL, ex.: index.html?stage=1&mode=prev
+  const query = new URLSearchParams(location.search);
+  for (const key of ["stage", "tab", "mode", "team"]) if (query.has(key)) st[key] = query.get(key);
+  if (query.has("theme")) document.documentElement.dataset.theme = query.get("theme");
+  $("foot").textContent = `Dados gerados em ${D.gerado_em} (UTC) por sim.export_site. Resultados: CSV local do projeto.`;
+  document.addEventListener("click", onClick);
+  document.addEventListener("keydown", e => { if (e.key === "Enter" && e.target.matches("[data-match]")) e.target.click(); });
+  document.addEventListener("mousemove", e => {
+    const mark = e.target.closest("[data-tip]"), tip = $("tip");
+    if (!mark) { tip.style.display = "none"; return; }
+    tip.textContent = mark.dataset.tip; tip.style.display = "block";
+    tip.style.left = Math.min(e.clientX + 12, window.innerWidth - tip.offsetWidth - 8) + "px";
+    tip.style.top = e.clientY + 14 + "px";
+  });
+  $("theme").addEventListener("click", () => {
+    const root = document.documentElement;
+    const dark = root.dataset.theme ? root.dataset.theme === "dark" : matchMedia("(prefers-color-scheme: dark)").matches;
+    root.dataset.theme = dark ? "light" : "dark";
+  });
+  render();
+}
+</script>
+</body>
+</html>

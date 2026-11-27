@@ -13,6 +13,11 @@ Prevalece sobre `claude/fontes-de-dados.md` (histórico da pesquisa inicial). De
 **Até nova decisão, nenhuma coleta além dessas duas.** Consultas pontuais à imprensa para
 contexto (formato, substitutos) são registradas com a fonte e não alimentam o modelo.
 
+**27/11 (sessão 05):** a rodada 5 do Stage 1 foi completada a partir do texto bruto da
+Wikipedia (CC BY-SA; cópia em `data/raw/wikipedia/`), a pedido de fechamento do Stage 1.
+Os vencedores foram informados pelo Larry; da Wikipedia vieram só os placares, que não
+alimentam o modelo. Aguarda confirmação (D37).
+
 ## Fora
 
 | Fonte | Situação |

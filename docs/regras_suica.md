@@ -87,6 +87,10 @@ Maior Difficulty = melhor seed. Empate: menor número de seed inicial. Como os s
 
 ## 3. Seeding
 
+**Atualização de 27/11:** H3 e a parte de H8 entre os classificados foram confirmadas pela
+rodada 1 do Stage 2 listada antes dos jogos (Wikipedia, fonte secundária); ver o fim
+deste documento. A tabela abaixo mantém o status pelo texto do rulebook.
+
 | Item | Status | Texto |
 |---|---|---|
 | Seed pré-evento: 32 times pelo VRS **global** | VERIFICADO (L53, L239) | "sorted based on their current global standing in the VRS" |
@@ -177,3 +181,15 @@ Os **33 confrontos** das rodadas 1 a 5 coincidem com os da engine (30 jogados e 
 anunciados da rodada 5). Isso confirma H4 e o uso e a direção do Buchholz; **não**
 testa H1 (o beco sem saída não ocorreu), nem distingue a tabela das rodadas 4-5 do
 "melhor x pior", nem testa H3 e H8.
+
+### V2 com o Stage 1 completo (27/11/2026)
+Os **33 confrontos jogados** coincidem com a engine e com uma segunda implementação feita
+só a partir do texto do RB (script de sessão, não versionado): R1 8/8, R2 8/8, R3 8/8, R4
+6/6, R5 3/3. Sem Difficulty, ou com ele invertido, a rodada 3 falha (1/8 e 2/8). Os
+Difficulty finais batem com a tabela da Wikipedia.
+
+A rodada 1 do Stage 2 listada (FUT x FlyQuest, Nemiga x NiP, G2 x Liquid, THE ONE x
+Eternal Fire, Natus Vincere x PVISION, Astralis x Imperial, The MongolZ x Lynn Vision,
+MIBR x 100 Thieves) exige o Difficulty **recalculado ao fim do stage** (H3): congelado na
+saída, NiP passaria à frente de FlyQuest. Teste:
+`test_v2_stage2_listed_round_one_confirms_final_seeds`.

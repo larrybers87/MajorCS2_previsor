@@ -1,0 +1,248 @@
+"""Gera os dados prontos do site (``app/index.html``). O site não calcula nada.
+
+Uso::
+
+    python -m sim.export_site [--prediction predictions/stage2/<carimbo>]
+
+Grava em ``data/processed/`` (fora do git):
+
+* ``site_data.js``: tudo o que o site mostra;
+* ``stage2_seeds.csv``: seeds do Stage 2 com a origem de cada time;
+* ``stage2_prediction/``: cópia da pasta oficial da previsão do Stage 2.
+
+Emparelhamentos, cartéis, Difficulty e seeds vêm da engine; a avaliação vem de
+``backtest.v3_evaluation``; as probabilidades do Stage 2 vêm da pasta commitada.
+"""
+
+from __future__ import annotations
+
+import argparse
+import json
+import shutil
+import subprocess
+from collections.abc import Sequence
+from datetime import datetime, timezone
+from pathlib import Path
+
+import pandas as pd
+
+from backtest.v3_evaluation import commit_info, evaluate
+from ingest.seeds import SEEDS_PATH, load_seeds
+from ingest.vrs import PROJECT_ROOT
+from swiss import StageState, buchholz, records, standings
+from swiss.rules import FINAL_RECORD_LABELS, N_ADVANCING
+
+from .common import MANUAL_DIR, PREDICTIONS_DIR, write_csv, write_text
+from .format_config import DEFAULT_FORMAT
+from .results import ResultRow, build_state, pairing_report, read_results
+from .stages import entrants_by_seed, stage2_names
+
+PROCESSED_DIR = PROJECT_ROOT / "data" / "processed"
+COMPLETE_MODE = "Stage 1 completo"
+
+
+def round_matches(
+    state: StageState, rows: Sequence[ResultRow], predictions: dict
+) -> list[list[dict]]:
+    """Partidas por rodada, na orientação "melhor seed primeiro", com a previsão."""
+    seed = {team.name: team.seed for team in state.teams}
+    rounds: list[list[dict]] = []
+    for number in sorted({r.round for r in rows}):
+        before = records(state.before_round(number))
+        matches = []
+        for row in (r for r in rows if r.round == number):
+            a, b = sorted((row.team_a, row.team_b), key=seed.__getitem__)
+            score = {row.team_a: row.score_a, row.team_b: row.score_b}
+            prediction = predictions.get((number, frozenset((a, b))))
+            if prediction is not None:
+                kind, p = prediction
+                prediction = {
+                    "tipo": kind,
+                    "p_a": p["p_a"] if p["time_a"] == a else 1 - p["p_a"],
+                    "acertou": p["acertou"],
+                    "log_loss": p["log_loss"],
+                    "brier": p["brier"],
+                }
+            matches.append(
+                {
+                    "rodada": number,
+                    "a": a,
+                    "b": b,
+                    "cartel": list(before[a]),
+                    "bo": row.best_of,
+                    "placar_a": score[a],
+                    "placar_b": score[b],
+                    "vencedor": row.winner,
+                    "previsao": prediction,
+                }
+            )
+        matches.sort(key=lambda m: (-m["cartel"][0], m["cartel"][1], seed[m["a"]]))
+        rounds.append(matches)
+    return rounds
+
+
+def final_table(state: StageState) -> list[dict]:
+    """Classificação final do stage com Difficulty e seed no stage seguinte."""
+    record = records(state)
+    difficulty = buchholz(state)
+    rows = []
+    for rank, name in enumerate(standings(state), start=1):
+        opponents = [
+            {
+                "rodada": m.round,
+                "adversario": m.team_b if m.team_a == name else m.team_a,
+                "venceu": m.winner == name,
+            }
+            for m in sorted(state.matches, key=lambda m: m.round)
+            if m.decided and name in m.pair
+        ]
+        advanced = rank <= N_ADVANCING
+        rows.append(
+            {
+                "posicao": rank,
+                "time": name,
+                "seed_inicial": state.seed_of(name),
+                "cartel": "{}-{}".format(*record[name]),
+                "difficulty": difficulty[name],
+                "avancou": advanced,
+                "seed_seguinte": N_ADVANCING + rank if advanced else None,
+                "caminho": opponents,
+            }
+        )
+    return rows
+
+
+def stage2_seed_table(seeds: pd.DataFrame, stage1: StageState) -> pd.DataFrame:
+    """Seeds 1-16 do Stage 2: convidados pelo pré-evento, classificados pelo seed final."""
+    info = seeds.set_index("name")
+    finals = {row["time"]: row for row in final_table(stage1)}
+    rows = []
+    for seed, name in enumerate(stage2_names(seeds, stage1), start=1):
+        qualified = name in finals
+        rows.append(
+            {
+                "seed": seed,
+                "time": name,
+                "origem": "Stage 1" if qualified else "convidado",
+                "seed_pre_evento": int(info.loc[name, "pre_event_seed"]),
+                "vrs_pontos": int(info.loc[name, "vrs_points"]),
+                "stage1_cartel": finals[name]["cartel"] if qualified else "",
+                "stage1_difficulty": finals[name]["difficulty"] if qualified else "",
+                "stage1_seed_inicial": finals[name]["seed_inicial"] if qualified else "",
+            }
+        )
+    return pd.DataFrame(rows)
+
+
+def latest_official(base: Path) -> Path:
+    """Pasta mais recente com o Stage 1 completo e sem resultados do Stage 2."""
+    for folder in sorted(base.glob("*"), reverse=True):
+        meta_path = folder / "meta.json"
+        if not meta_path.exists():
+            continue
+        meta = json.loads(meta_path.read_text(encoding="utf-8"))
+        if meta.get("mode") == COMPLETE_MODE:
+            return folder
+    raise FileNotFoundError(f"nenhuma previsão com o Stage 1 completo em {base}")
+
+
+def stage2_data(folder: Path, seed_table: pd.DataFrame) -> dict:
+    meta = json.loads((folder / "meta.json").read_text(encoding="utf-8"))
+    if meta["stage2_seeds"] != seed_table["time"].tolist():
+        raise ValueError(
+            f"{folder.name}: os seeds da previsão não são os calculados a partir do CSV"
+        )
+    table = pd.read_csv(folder / "probabilities.csv").set_index("time")
+    opening = pd.read_csv(folder / "opening_round.csv")
+    try:
+        commit = commit_info(folder / "probabilities.csv")
+    except (ValueError, subprocess.CalledProcessError):
+        commit = None
+    teams = []
+    for row in seed_table.to_dict("records"):
+        p = table.loc[row["time"]]
+        teams.append(
+            row
+            | {
+                "cartoes": [float(p[f"P({label})"]) for label in FINAL_RECORD_LABELS],
+                "p_avancar": float(p["P(avançar)"]),
+                "p_avancar_w0": float(p["P(avançar) w=0"]),
+                "p_avancar_w1": float(p["P(avançar) w=1"]),
+            }
+        )
+    return {
+        "pasta": folder.name,
+        "gerado_em": meta["generated_at_utc"],
+        "simulacoes": meta["n_sims"],
+        "commit": commit,
+        "abertura": [
+            {
+                "seed_a": int(r["seed_a"]),
+                "a": r["time_a"],
+                "seed_b": int(r["seed_b"]),
+                "b": r["time_b"],
+                "bo": int(r["best_of"]),
+                "p_a": float(r["P(time_a vence)"]),
+            }
+            for r in opening.to_dict("records")
+        ],
+        "times": teams,
+    }
+
+
+def build(results_path: Path, prediction: Path, seeds_path: Path = SEEDS_PATH) -> dict:
+    seeds = load_seeds(seeds_path)
+    rows = read_results(results_path)
+    stage1 = build_state(DEFAULT_FORMAT.stage_state(1, entrants_by_seed(seeds, 1)), rows)
+    evaluation = evaluate(results_path, seeds_path)
+    predictions = {
+        (m["rodada"], frozenset((m["time_a"], m["time_b"]))): (kind, m)
+        for kind, key in (("retrospectivo", "retrospectivo"), ("previo", "previo_r5"))
+        for m in evaluation[key]["partidas"]
+    }
+    seed_table = stage2_seed_table(seeds, stage1)
+    info = seeds.set_index("name")
+    return {
+        "gerado_em": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+        "cartoes": list(FINAL_RECORD_LABELS),
+        "times": {
+            name: {"vrs": int(info.loc[name, "vrs_points"])} for name in info.index
+        },
+        "stage1": {
+            "rodadas": round_matches(stage1, rows, predictions),
+            "classificacao": final_table(stage1),
+            "divergencias_engine": pairing_report(stage1),
+        },
+        "avaliacao": evaluation,
+        "stage2": stage2_data(prediction, seed_table),
+    }
+
+
+def main(argv: list[str] | None = None) -> int:
+    cli = argparse.ArgumentParser(description="Dados do site")
+    cli.add_argument("--stage1", type=Path, default=MANUAL_DIR / "stage1_results.csv")
+    cli.add_argument("--prediction", type=Path, help="pasta da previsão do Stage 2")
+    cli.add_argument("--out", type=Path, default=PROCESSED_DIR)
+    args = cli.parse_args(argv)
+    try:
+        folder = (args.prediction or latest_official(PREDICTIONS_DIR / "stage2")).resolve()
+        data = build(args.stage1, folder)
+        seeds = load_seeds(SEEDS_PATH)
+        stage1 = build_state(
+            DEFAULT_FORMAT.stage_state(1, entrants_by_seed(seeds, 1)), read_results(args.stage1)
+        )
+    except (FileNotFoundError, ValueError, subprocess.CalledProcessError) as exc:
+        print(f"ERRO: {exc}")
+        return 1
+    args.out.mkdir(parents=True, exist_ok=True)
+    payload = json.dumps(data, ensure_ascii=False, allow_nan=False)
+    write_text(args.out / "site_data.js", f"window.SITE_DATA = {payload};\n")
+    write_csv(args.out / "stage2_seeds.csv", stage2_seed_table(seeds, stage1))
+    shutil.copytree(folder, args.out / "stage2_prediction", dirs_exist_ok=True)
+    print(f"Gravado em {args.out / 'site_data.js'} (previsão {folder.name})")
+    print(f"Abra {PROJECT_ROOT / 'app' / 'index.html'} no navegador.")
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

@@ -1,10 +1,26 @@
-# Dúvidas abertas e divergências (atualizado em 26/11/2026, sessão 04)
+# Dúvidas abertas e divergências (atualizado em 27/11/2026, sessão 05)
 
 "RB" = `major-supplemental-rulebook.md` (cópia local; ver [fontes_valve.md](fontes_valve.md)).
 Citações em [regras_suica.md](regras_suica.md); decisões em [decisoes.md](decisoes.md).
 Fontes de imprensa são **secundárias**.
 
 ## Antes de 02/12 (Stage 3)
+
+### D36 — Formato e horário do Stage 3 sem confirmação oficial
+O rulebook (HEAD da Valve em 27/11, commit `621b7d9`) diz Bo1 fora de avanço/eliminação e
+playoffs em Bo3; imprensa e Wikipedia dizem Stage 3 todo Bo3 e final Bo5. Não há horário
+oficial do Stage 3. Fontes em [relatorio_sessao_05.md](relatorio_sessao_05.md), item 8.
+Engine e configuração inalteradas.
+
+### D37 — Rodada 5 do Stage 1 preenchida pela Wikipedia
+Placares de mapas vindos de fonte secundária (vencedores iguais aos informados pelo
+Larry; placares não entram em cálculo). **Confirmar.** A mesma página tem erro no quadro
+PVISION x FlyQuest (6-13; a tabela dela e o CSV indicam 9-13).
+
+### D38 — V3 retrospectivo com as 33 partidas não gerado
+O roteiro previa `sim.v3_stage1`; o pedido de 27/11 proíbe previsões retroativas quando
+não há previsão pré-Stage 1. A [avaliação](avaliacao_stage1.md) usa só o que já estava
+commitado (30 retrospectivas + 3 prévias). **Decidir** se roda.
 
 ### D35 — B1 ao vivo com rodada pela metade
 O código congelado aplica qualquer partida decidida que receber. Para cumprir a D33, o
@@ -43,14 +59,14 @@ evento) segue sem solução: o VRS não informa o evento.
 
 | Id | Questão | Estado |
 |---|---|---|
-| **H1** | R3: "melhor x pior" pode sobrar em rematch | provisória; **o caso não ocorreu** no Stage 1 |
+| **H1** | R3: "melhor x pior" pode sobrar em rematch | provisória; **o caso não ocorreu** no Stage 1 (33 partidas) |
 | **H2** | "Seed" nas rodadas 2-5 = Mid-stage Seed no grupo | **confirmada pelos fatos** do Stage 1 (ordenar sem Buchholz ou invertido é descartado) |
-| **H3** | "Final seed" usa Difficulty recalculado ao fim do stage | pendente: chaveamento real do Stage 2 |
+| **H3** | "Final seed" usa Difficulty recalculado ao fim do stage | **confirmada** pela rodada 1 listada do Stage 2 (fonte secundária) |
 | **H4** | Stage 1: seeds 1-16 = ordem relativa do VRS | **confirmada** (rodada 1; qualquer troca de seeds vizinhos é detectada) |
 | **H5** | Posição final = seed final do stage | adotada |
 | **H6** | Difficulty só com rodadas encerradas | consistente com o Stage 1 |
 | **H7** | Semifinais 1v8 x 4v5 e 2v7 x 3v6, sem re-seeding | confirmar antes dos playoffs |
-| **H8** | Entre cartéis: mais vitórias, depois menos derrotas | pendente |
+| **H8** | Entre cartéis: mais vitórias, depois menos derrotas | **confirmada para 3-0 > 3-1 > 3-2** (mesma listagem); entre eliminados, pendente |
 | **H9** | `prob_fn` recebe como `team_a` o melhor ordenado | rever no modelo de veto |
 
 - **Tabela das rodadas 4-5 x "melhor x pior":** o Stage 1 real **não distingue** as duas
@@ -65,7 +81,7 @@ evento) segue sem solução: o VRS não informa o evento.
 - **D10-D13:** ver relatórios anteriores.
 - **D14, D18:** push autorizado e feito; arquivos da Valve fora do histórico.
 - **D15:** THE ONE = 1win, GOSH = BC.Game (decisão 3 da sessão 03).
-- **D16:** CSV do Stage 1 recebido (rodadas 1 a 4; falta o placar da 5).
+- **D16:** CSV do Stage 1 completo (rodada 5: ver D37).
 - **D17:** primeiro jogo do Stage 2 em 28/11, 04:00 UTC; Bo1/Bo3 confirmados pelo
   calendário (compatível com a engine).
 - **D24:** GRID descartado; LiquipediaDB opcional, a cargo do Larry; nenhuma coleta nova.

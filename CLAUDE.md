@@ -40,6 +40,8 @@ python -m backtest.h10_format           # modelo do Stage 2 e docs/h10_verossimi
 python -m backtest.b1_selection         # B1 contra B0 e docs/b1_avaliacao.md
 python -m sim.b1_ratings --stage1 data/manual/stage1_results.csv   # ratings B1 do Major
 python -m sim.v3_stage1 --results data/manual/stage1_results.csv
+python -m backtest.v3_evaluation                         # docs/avaliacao_stage1.md
+python -m sim.export_site                                # dados de app/index.html
 python -m sim.anexo_d25 --official <pasta da previsão>   # sensibilidade (não oficial)
 python -m backtest.calibration_diagnostic                # docs/calibracao_teste_b0.md
 predict_stage2 --stage1 data/manual/stage1_results.csv [--stage2 data/manual/stage2_results.csv]
