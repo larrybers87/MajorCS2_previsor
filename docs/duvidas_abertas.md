@@ -17,8 +17,12 @@ Registro por fonte em [formato_stage3_playoffs.md](formato_stage3_playoffs.md): 
 confirmado oficialmente**; 3º lugar em Bo3 é **hipótese**.
 
 ### D42 — Modelo dos playoffs
-Não coberto pelo pré-registro do Stage 3. **Decidir** antes de preencher a previsão
-([esqueleto](modelo_previsao_stage3.md)).
+Não coberto pelo pré-registro do Stage 3. **Adiado** por decisão de 27/11: adendo antes de
+10/12.
+
+### D45 — W.O. no Stage 2 ou no Stage 3
+Nem o protocolo de avaliação nem a checagem dizem como pontuar partida não disputada.
+**Decidir** se ocorrer.
 
 
 ### D40 — `claude/regras-verificadas.md` ausente

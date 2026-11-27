@@ -7,8 +7,8 @@
 > [emenda 2](preregistro_stage3_emenda_02.md),
 > [emenda 3](preregistro_stage3_emenda_03.md),
 > [emenda 4](preregistro_stage3_emenda_04.md) e
-> [adendo](adendo_preregistro_stage1.md). O script da combinação e da checagem
-> **ainda não foi escrito**.
+> [adendo](adendo_preregistro_stage1.md). Scripts: `python -m sim.stage3_check` e depois
+> `python -m sim.predict_stage3`.
 
 Preenchido em: ⟨data e hora⟩ · pasta: `predictions/stage3/⟨carimbo⟩` · commit: ⟨hash⟩ ·
 push: ⟨horário da API do GitHub⟩ · primeiro jogo: ⟨data, hora e fonte⟩
@@ -46,7 +46,8 @@ anteriores; formato em que a partida foi jogada.
   0,350419; B1 w=1 beta 0,532006) e média das distribuições, peso 1/4 cada.
 - B0: pontos VRS de 02/11. B1: Elo s=0,5, K=20, sem decaimento, m=2, com os resultados dos
   Stages 1 e 2; probabilidades fixas dentro de cada simulação.
-- Simulações: ⟨n⟩ por variante; semente: ⟨definir antes de ver os seeds⟩.
+- **200.000 simulações por variante, semente 20261202** (confirmadas pelo Larry em 27/11,
+  antes de conhecer os seeds do Stage 3).
 
 ## 3. Participantes e seeds
 
@@ -79,7 +80,10 @@ oficial não é ajustado**. A sensibilidade vai na seção 6-A, à parte.
 
 Posição final na suíça (P de cada posição, 1 a 16): ⟨arquivo⟩.
 
-## 6. Playoffs
+## 6. Playoffs — **adiados** (adendo antes de 10/12)
+
+Decisão de 27/11: o modelo dos playoffs fica para depois. `sim.predict_stage3` não os
+calcula; esta seção só é preenchida com o adendo.
 
 | Time | Quartas | Semifinal | Final | Título | 3º | 4º |
 |---|---|---|---|---|---|---|
@@ -87,7 +91,7 @@ Posição final na suíça (P de cada posição, 1 a 16): ⟨arquivo⟩.
 
 Hipóteses: semifinais por chave, sem reordenar seeds (H7); **3º lugar em Bo3
 (hipótese)**; final em Bo5 conforme [formato](formato_stage3_playoffs.md). Modelo dos
-playoffs: **não coberto pelo pré-registro** — ⟨decidir antes de preencher⟩.
+playoffs: **não coberto pelo pré-registro** — ⟨adendo antes de 10/12⟩.
 
 ## 6-A. Sensibilidade aos reservas (NÃO é a previsão oficial)
 

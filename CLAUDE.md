@@ -45,6 +45,9 @@ python -m sim.export_site                                # dados de app/index.ht
 python -m sim.site_server                                # site com Simulador (127.0.0.1:8000)
 python -m sim.round_update                               # docs/roteiro_rodadas_stage2.md
 python -m backtest.b1_decay_report                       # variantes do B1 (desenvolvimento)
+python -m backtest.stage2_evaluation                     # fim do Stage 2 (emendas 1-3)
+python -m sim.stage3_check                               # checagem de desastre (uma vez)
+python -m sim.predict_stage3                             # previsão do Stage 3, sem playoffs
 python -m sim.anexo_d25 --official <pasta da previsão>   # sensibilidade (não oficial)
 python -m backtest.calibration_diagnostic                # docs/calibracao_teste_b0.md
 predict_stage2 --stage1 data/manual/stage1_results.csv [--stage2 data/manual/stage2_results.csv]

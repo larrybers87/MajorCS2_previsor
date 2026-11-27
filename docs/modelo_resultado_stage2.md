@@ -4,7 +4,8 @@
 > Copiar para `docs/resultado_stage2.md` antes de preencher. As regras abaixo vêm de
 > [avaliacao_stage2.md](avaliacao_stage2.md), [emenda 1](avaliacao_stage2_emenda_01.md),
 > [emenda 2](avaliacao_stage2_emenda_02.md) e [emenda 3](avaliacao_stage2_emenda_03.md);
-> em caso de diferença, valem elas. O código desta avaliação **ainda não foi escrito**.
+> em caso de diferença, valem elas. `python -m backtest.stage2_evaluation` gera
+> `docs/resultado_stage2.md` já nesta estrutura; este esqueleto fica como referência.
 
 Preenchido em: ⟨data e hora⟩ · commit do código: ⟨hash⟩
 

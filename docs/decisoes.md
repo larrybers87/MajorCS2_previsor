@@ -156,6 +156,16 @@ A previsão antecipada não mudou (mesmos blobs git). SHA-256, nas duas formas:
   [emenda 4](preregistro_stage3_emenda_04.md): Vitality 0, −25, −50 e Legacy 0, −50, −100
   pontos VRS; publicar só o oficial e a faixa mín.–máx. de P(avançar).
 
+- **Prioridades antes de 02/12:** (a) avaliação do Stage 2 conforme a emenda 3; (b)
+  combinação B0/B1 e checagem de desastre conforme o pré-registro, sem reponderar; (c)
+  **modelo dos playoffs adiado**, com adendo antes de 10/12.
+- **Rodadas do Stage 2:** com os resultados colados pelo Larry, rodar `round_update`,
+  validar os confrontos contra a engine e deixar `predictions/stage2/round<N>/` pronta,
+  **sem commit até ele pedir**.
+
+- **Previsão do Stage 3:** 200.000 simulações por variante e semente 20261202
+  (confirmadas antes de conhecer os seeds do Stage 3).
+
 ## Anteriores
 - Escopo temporal: a partir de 2025-06-01 (`claude/fontes-de-dados.md`).
 - Dashboard local por enquanto.

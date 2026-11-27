@@ -27,6 +27,22 @@ entram na simulação, mas não nos ratings do B1 (D33).
 Depois da rodada 5, o mesmo comando grava `predictions/stage2/final/` com a classificação,
 os ratings e os seeds do Stage 3.
 
+## Quando o Larry cola os resultados na conversa
+Os resultados entram no CSV, roda-se o passo 3, conferem-se os confrontos reais com a
+engine e a pasta fica pronta em `predictions/stage2/round<N>/`. **Nada é commitado até ele
+pedir.** Sem commit enviado antes do primeiro jogo da rodada, a saída não conta como
+previsão anterior a ela.
+
+## Depois do fim do Stage 2 (antes do Stage 3), nesta ordem
+1. `python -m backtest.stage2_evaluation` → `docs/resultado_stage2.md` (emendas 1 a 3).
+   Preencher os campos ⟨…⟩.
+2. `python -m sim.stage3_check` → checagem de desastre, **uma única vez**. Commit e push
+   do resultado e da decisão.
+3. `python -m sim.predict_stage3` → previsão do Stage 3 (oficial e faixa da emenda 4),
+   sem playoffs. Commit e push **antes do primeiro jogo**.
+
+Os passos 2 e 3 precisam dos mesmos arquivos de entrada (conferido por hash).
+
 ## Conferência secundária (opcional)
 Salvar o texto da Wikipedia uma vez em uma pasta nova de `data/raw/wikipedia/` e passar
 `--wiki <arquivo>`. As diferenças são só listadas; vale o CSV.
