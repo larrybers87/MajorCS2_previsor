@@ -22,10 +22,10 @@ def run_annex(files, *args):  # noqa: F811
 
 def test_adjustment_changes_points_but_not_seeds(files):  # noqa: F811
     seeds = pd.read_csv(files["seeds"])
-    changed = anexo_d25.adjusted_seeds(seeds, -100)
-    different = changed["vrs_points"] != seeds["vrs_points"]
-    assert sorted(changed.loc[different, "name"]) == ["Astralis", "FUT"]
-    assert (changed.loc[different, "vrs_points"] - seeds.loc[different, "vrs_points"] == -100).all()
+    changed = anexo_d25.adjusted_seeds(seeds, {"FUT": -100, "Astralis": -50})
+    difference = (changed["vrs_points"] - seeds["vrs_points"]).groupby(seeds["name"]).sum()
+    assert difference[difference != 0].to_dict() == {"FUT": -100, "Astralis": -50}
+    assert len(anexo_d25.SCENARIOS) == len(set(anexo_d25.SCENARIOS)) == 9
     pd.testing.assert_series_equal(changed["pre_event_seed"], seeds["pre_event_seed"])
     assert entrants_by_seed(changed, 2) == entrants_by_seed(seeds, 2)
     assert (seeds["vrs_points"] == pd.read_csv(files["seeds"])["vrs_points"]).all()
@@ -42,15 +42,21 @@ def test_scenario_zero_reproduces_the_official_prediction(files, complete):  # n
     meta = json.loads((folder / "meta.json").read_text(encoding="utf-8"))
     assert meta["official"] is False and meta["check_max_difference"] <= anexo_d25.TOLERANCE
     table = pd.read_csv(folder / "scenarios.csv")
-    assert sorted(table["delta"].unique()) == [-100, -50, 0]
-    advance = table.pivot(index="time", columns="delta", values="P(avançar)")
-    for team in ("FUT", "Astralis"):
-        assert advance.loc[team, 0] > advance.loc[team, -50] > advance.loc[team, -100]
+    columns = ["delta_fut", "delta_astralis"]
+    assert len(table.groupby(columns)) == 9
+    advance = table.pivot_table(index="time", columns=columns, values="P(avançar)")
+    # Cada time cai quando só a própria redução aumenta, com a do outro fixa.
+    for other in (0, -50, -100):
+        fut = [advance.loc["FUT", (d, other)] for d in (0, -50, -100)]
+        astralis = [advance.loc["Astralis", (other, d)] for d in (0, -50, -100)]
+        assert fut == sorted(fut, reverse=True) and astralis == sorted(astralis, reverse=True)
+        assert fut[0] > fut[2] and astralis[0] > astralis[2]
     # A soma de P(avançar) continua 8: o que um perde os outros ganham.
-    assert advance.sum().tolist() == pytest.approx([8.0, 8.0, 8.0], abs=1e-4)
+    assert advance.sum().tolist() == pytest.approx([8.0] * 9, abs=1e-4)
     matches = pd.read_csv(folder / "matches.csv")
     assert set(matches["time"]) == {"FUT", "Astralis"}
-    assert "arbitrários" in (folder / "summary.md").read_text(encoding="utf-8")
+    summary = (folder / "summary.md").read_text(encoding="utf-8")
+    assert "arbitrários" in summary and summary.count("-100 pts") >= 4
 
 
 def test_mismatch_with_official_fails(files):  # noqa: F811

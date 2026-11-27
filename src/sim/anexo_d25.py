@@ -1,17 +1,22 @@
-"""Anexo de sensibilidade D25 (``docs/anexo_d25_protocolo.md``). NÃO é a previsão oficial.
+"""Anexo de sensibilidade D25. NÃO é a previsão oficial.
+
+Protocolo: ``docs/anexo_d25_protocolo.md`` e ``docs/anexo_d25_emenda_01.md``.
 
 Uso (mesmas entradas de ``predict_stage2``)::
 
     python -m sim.anexo_d25 --stage1 data/manual/stage1_results.csv --official <pasta oficial>
     python -m sim.anexo_d25 --conditioned --official <pasta oficial>
 
-Reduz os pontos VRS de FUT e Astralis só nas probabilidades de partida; os seeds não
-mudam. O cenário 0 precisa reproduzir a previsão oficial.
+Reduz os pontos VRS de FUT e de Astralis, cada um separadamente (grade 3x3), só nas
+probabilidades de partida; os seeds não mudam. O cenário (0, 0) precisa reproduzir a
+previsão oficial.
 """
 
 from __future__ import annotations
 
 import argparse
+import itertools
+from collections.abc import Mapping
 from pathlib import Path
 
 import numpy as np
@@ -43,28 +48,97 @@ from .stages import entrants_by_seed, stage2_names
 
 ADJUSTED_TEAMS = ("FUT", "Astralis")
 DELTAS = (0, -50, -100)  # valores ARBITRÁRIOS, pré-registrados
+SCENARIOS = tuple(itertools.product(DELTAS, DELTAS))  # (delta FUT, delta Astralis)
+DELTA_COLUMNS = ["delta_fut", "delta_astralis"]
 TOLERANCE = 1.5e-6  # as saídas oficiais têm 6 casas
 
 
-def adjusted_seeds(seeds: pd.DataFrame, delta: int) -> pd.DataFrame:
+def adjusted_seeds(seeds: pd.DataFrame, deltas: Mapping[str, int]) -> pd.DataFrame:
     """Cópia dos seeds com os pontos VRS alterados; as colunas de seed não mudam."""
     out = seeds.copy()
-    chosen = out["name"].isin(ADJUSTED_TEAMS)
-    if chosen.sum() != len(ADJUSTED_TEAMS):
-        raise ValueError(f"times {ADJUSTED_TEAMS} não encontrados nos seeds")
-    out.loc[chosen, "vrs_points"] = out.loc[chosen, "vrs_points"] + delta
+    for team, delta in deltas.items():
+        chosen = out["name"] == team
+        if chosen.sum() != 1:
+            raise ValueError(f"time {team!r} não encontrado nos seeds")
+        out.loc[chosen, "vrs_points"] = out.loc[chosen, "vrs_points"] + delta
     return out
 
 
 def compare_with_official(table: pd.DataFrame, folder: Path) -> float:
-    """Maior diferença entre o cenário 0 e ``probabilities.csv`` da pasta oficial."""
+    """Maior diferença entre o cenário (0, 0) e ``probabilities.csv`` da pasta oficial."""
     official = pd.read_csv(folder / "probabilities.csv").set_index("time")
-    baseline = table[table["delta"] == 0].set_index("time")
+    baseline = table[(table["delta_fut"] == 0) & (table["delta_astralis"] == 0)]
+    baseline = baseline.set_index("time")
     if set(official.index) != set(baseline.index):
         raise ValueError("a pasta oficial tem outro conjunto de times (modo diferente?)")
     columns = [*RECORD_COLUMNS, "P(avançar)"]
     difference = (baseline.loc[official.index, columns] - official[columns]).abs()
     return float(difference.to_numpy().max())
+
+
+def _grid(table: pd.DataFrame, team: str) -> list[str]:
+    """P(avançar) de ``team`` nas nove combinações."""
+    own = table[table["time"] == team].set_index(DELTA_COLUMNS)["P(avançar)"]
+    return markdown_table(
+        ["FUT \\ Astralis", *[f"{d} pts" for d in DELTAS]],
+        [[f"{f} pts", *[percent(own[(f, a)]) for a in DELTAS]] for f in DELTAS],
+    )
+
+
+def _summary(table, match_table, complete: bool, args, check) -> list[str]:
+    advance = table.pivot_table(index="time", columns=DELTA_COLUMNS, values="P(avançar)")
+    baseline = advance[(0, 0)]
+    others = [t for t in baseline.sort_values(ascending=False).index
+              if baseline[t] > 0 and t not in ADJUSTED_TEAMS]  # fmt: skip
+    # Abertura: depende só da redução do próprio time (não há FUT x Astralis na rodada 1).
+    own_delta = np.where(match_table["time"] == "FUT", match_table["delta_fut"],
+                         match_table["delta_astralis"])  # fmt: skip
+    other_delta = np.where(match_table["time"] == "FUT", match_table["delta_astralis"],
+                           match_table["delta_fut"])  # fmt: skip
+    opening = match_table.assign(pontos=own_delta)[other_delta == 0]
+    top = opening.groupby(["time", "pontos"], sort=False).head(3)
+    return [
+        "# Anexo D25: sensibilidade aos substitutos de FUT e Astralis",
+        "",
+        "**Não é a previsão oficial.** Os valores -50 e -100 pontos VRS são **arbitrários**: "
+        "não foram estimados e não medem o efeito real de um substituto. Os seeds não mudam.",
+        "",
+        "Modo: " + ("Stage 1 completo." if complete else "condicionado (Stage 1 incompleto).")
+        + f" Grade 3x3; {args.sims} simulações por cenário e extremo de w.",
+        "",
+        (
+            f"Cenário (0, 0) conferido com `{args.official.name}`: maior diferença {check:.7f}."
+            if check is not None
+            else "Cenário (0, 0) NÃO conferido com uma previsão oficial (sem `--official`)."
+        ),
+        "",
+        "## P(avançar) de FUT",
+        "",
+        *_grid(table, "FUT"),
+        "",
+        "## P(avançar) de Astralis",
+        "",
+        *_grid(table, "Astralis"),
+        "",
+        "## Demais times: manchete (0, 0) e faixa nos nove cenários",
+        "",
+        *markdown_table(
+            ["Time", "(0, 0)", "menor", "maior"],
+            [[t, percent(baseline[t]), percent(advance.loc[t].min()),
+              percent(advance.loc[t].max())] for t in others],  # fmt: skip
+        ),
+        "",
+        "## Abertura (redução do próprio time; três confrontos mais prováveis)",
+        "",
+        *markdown_table(
+            ["Time", "Pts", "Adversário", "Formato", "P(confronto)", "P(vence)"],
+            [
+                [r.time, r.pontos, r.adversario, f"Bo{r.best_of}",
+                 percent(r["P(confronto)"]), percent(r["P(time vence)"])]  # fmt: skip
+                for _, r in top.iterrows()
+            ],
+        ),
+    ]
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -108,8 +182,9 @@ def main(argv: list[str] | None = None) -> int:
 
     invited = entrants_by_seed(seeds, 2)
     tables, matches = [], []
-    for delta in DELTAS:
-        scenario = adjusted_seeds(seeds, delta)
+    for deltas in SCENARIOS:
+        by_team = dict(zip(ADJUSTED_TEAMS, deltas))
+        scenario = adjusted_seeds(seeds, by_team)
         prob_fns = [
             b0_from(scenario, v["beta"], model["transform"]).prob_fn() for v in model["variants"]
         ]
@@ -144,12 +219,13 @@ def main(argv: list[str] | None = None) -> int:
             table["P(participa)"] = np.mean(
                 [r.participation_counts / args.sims for r in results], axis=0
             )
-        table.insert(1, "delta", delta)
+        for position, (column, delta) in enumerate(zip(DELTA_COLUMNS, deltas), start=1):
+            table.insert(position, column, delta)
         tables.append(table)
         bo = 3 if (complete and stage2.all_best_of_three) else 1
         matches += [
             {
-                "delta": delta,
+                **dict(zip(DELTA_COLUMNS, deltas)),
                 "time": team,
                 "adversario": opponent,
                 "P(confronto)": share,
@@ -169,53 +245,16 @@ def main(argv: list[str] | None = None) -> int:
             print(f"ERRO ao comparar com a oficial: {exc}")
             return 1
         if check > TOLERANCE:
-            print(f"ERRO: o cenário 0 difere da previsão oficial em até {check:.6f}")
+            print(f"ERRO: o cenário (0, 0) difere da previsão oficial em até {check:.6f}")
             return 1
 
-    advance = table.pivot(index="time", columns="delta", values="P(avançar)")
-    advance = advance.sort_values(0, ascending=False)
-    advance = advance[advance[0] > 0]
-    lines = [
-        "# Anexo D25: sensibilidade aos substitutos de FUT e Astralis",
-        "",
-        "**Não é a previsão oficial.** Os valores -50 e -100 pontos VRS são **arbitrários**: "
-        "não foram estimados e não medem o efeito real de um substituto. Os seeds não mudam.",
-        "",
-        "Modo: " + ("Stage 1 completo." if complete else "condicionado (Stage 1 incompleto).")
-        + f" Simulações: {args.sims} por extremo de w.",
-        "",
-        (
-            f"Cenário 0 conferido com `{args.official.name}`: maior diferença {check:.6f}."
-            if check is not None
-            else "Cenário 0 NÃO conferido com uma previsão oficial (sem `--official`)."
-        ),
-        "",
-        "## P(avançar no Stage 2)",
-        "",
-        *markdown_table(
-            ["Time", *[f"{d} pts" for d in DELTAS]],
-            [
-                [("**" + t + "**") if t in ADJUSTED_TEAMS else t,
-                 *[percent(row[d]) for d in DELTAS]]
-                for t, row in advance.iterrows()
-            ],  # fmt: skip
-        ),
-        "",
-        "## Abertura de FUT e Astralis (três confrontos mais prováveis)",
-        "",
-        *markdown_table(
-            ["Pts", "Time", "Adversário", "Formato", "P(confronto)", "P(vence)"],
-            [
-                [r.delta, r.time, r.adversario, f"Bo{r.best_of}",
-                 percent(r["P(confronto)"]), percent(r["P(time vence)"])]  # fmt: skip
-                for _, r in match_table.groupby(["delta", "time"], sort=False).head(3).iterrows()
-            ],
-        ),
-    ]
+    lines = _summary(table, match_table, complete, args, check)
     metadata = run_metadata() | {
         "kind": "anexo_d25",
         "official": False,
+        "amendment": 1,
         "deltas": list(DELTAS),
+        "scenarios": [list(s) for s in SCENARIOS],
         "teams": list(ADJUSTED_TEAMS),
         "n_sims": args.sims,
         "rng_seed": args.seed,
