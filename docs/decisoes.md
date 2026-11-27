@@ -76,6 +76,35 @@ A previsão antecipada não mudou (mesmos blobs git). SHA-256, nas duas formas:
 | `probabilities.csv` | `8403a87e0039b58116ae5b68ab131be77c5f0297388e5c1200ad05ceb2e8cfb2` | `7bcb258bddaa5fd4c5c38b137c62bac3a90f5603918c1bae8b7ad13c1a4fd3d9` |
 | `opening_round.csv` | `49e97592d40c623f6a9085f59e22cf32b066d8049c0f15cb4696753990beca4c` | `c52812841cc0b04d653a8ee0114492c2114e3ae7036efffc177946b718752b5e` |
 
+## 26/11/2026, 21:30 BRT (sessão de planejamento, registrada na sessão 04)
+
+- **D17 (fechada):** primeiro jogo do Stage 2 no **sábado 28/11 às 01:00 BRT (04:00
+  UTC)**. Os horários da HLTV estão em Brasília (conferido pelo Larry com o Stage 1: 05:00
+  CET = 01:00 BRT). **Prazo do push oficial: antes de 04:00 UTC de 28/11.** O calendário do
+  Stage 2 confirma Bo1 nas rodadas 1-2; na rodada 3, Bo1 nos jogos 1-4 e Bo3 nos jogos
+  5-8; Bo3 nas rodadas 4-5. (Compatível com a engine: 4 Bo1 e 4 Bo3 na rodada 3.)
+- **D28:** vale como oficial a **última previsão enviada** (push com horário da API do
+  GitHub) antes do primeiro jogo do Stage 2. Métricas primárias: **log loss por partida**
+  (Brier secundária) e **log score da distribuição do cartel final**, com IC por bootstrap
+  de simulações (os 16 times são dependentes). Referências: 50% e maior VRS fixo.
+  Atualizações ao vivo ficam em tabela separada. Definições operacionais:
+  [avaliacao_stage2.md](avaliacao_stage2.md).
+- **D25:** B0 **sem ajuste** na manchete. Anexo de sensibilidade, pré-registrado antes do
+  jogo, com redução de 0, -50 e -100 pontos VRS para FUT e Astralis (**valores
+  arbitrários**): [anexo_d25_protocolo.md](anexo_d25_protocolo.md). Vitality e Legacy só
+  no Stage 3.
+- **D27:** "ponto médio" = **média das probabilidades** de w=0 e w=1. Só os dois extremos,
+  sem grade.
+- **D24 (atualizada na mesma noite; substitui "pedir LiquipediaDB e GRID em
+  paralelo"):** **GRID descartado** (o site só oferece contato com vendas, sem cadastro).
+  **LiquipediaDB opcional**, não bloqueia nada: se o Larry pedir a chave pelo formulário
+  de contato, ele avisa; até lá, **nenhuma coleta além do VRS e dos resultados do
+  Major**. Estatísticas por jogador e por mapa ficam **fora do escopo** até haver fonte
+  permitida: [fontes_dados.md](fontes_dados.md).
+- **D26:** no Stage 3 o modelo principal é a **média 50/50 de B0 e B1**, com checagem de
+  desastre; o teste já visto não pode ser usado como argumento. Pré-registro (commit antes
+  de 02/12): [preregistro_stage3.md](preregistro_stage3.md).
+
 ## Anteriores
 - Escopo temporal: a partir de 2025-06-01 (`claude/fontes-de-dados.md`).
 - Dashboard local por enquanto.

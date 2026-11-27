@@ -1,6 +1,8 @@
 # Substitutos no PGL Major Singapore 2026 (consulta em 26/11/2026)
 
-O modelo **não foi alterado** por causa desta lista.
+O modelo **não foi alterado** por causa desta lista. A manchete do Stage 2 é o B0 sem
+ajuste; a sensibilidade para FUT e Astralis está no anexo
+[anexo_d25_protocolo.md](anexo_d25_protocolo.md). Vitality e Legacy: só no Stage 3.
 
 ## Quem começa com o substituto registrado
 
@@ -30,7 +32,13 @@ A equipe pode seguir com o substituto até decidir voltar ao elenco principal; d
 volta não pode substituir de novo. Logo, **a escalação pode mudar durante o Major**.
 
 ## Fontes e confiança
-Secundárias, concordantes entre si nas cinco trocas:
+
+**Estado:** citado por duas fontes que reproduzem a lista oficial da PGL (gambling.com e
+pley.gg, 9/11); a página da PGL continua sem verificação direta. *Essas duas fontes foram
+informadas pelo Larry na sessão de planejamento de 26/11; as páginas não foram abertas por
+mim e não há links registrados.*
+
+Também consultadas na sessão 03, concordantes nas cinco trocas:
 - [Shane the Gamer](https://www.shanethegamer.com/news/pgl-major-singapore-2026-rosters-substitutes/)
   (publicada 09/11, atualizada 10/11): cita o anúncio de elencos da PGL; diz que os cinco
   times começam com o substituto. Só dá o motivo para a Vitality (jL conta como titular no
@@ -40,7 +48,7 @@ Secundárias, concordantes entre si nas cinco trocas:
 - [SkinsMonkey](https://skinsmonkey.com/blog/pgl-major-singapore-2026/) (atualizada
   25/11): mesmas cinco trocas.
 
-**Não verificado em fonte oficial:** o anúncio da PGL
+**Sem verificação direta:** o anúncio da PGL
 (<https://news.pglesports.com/news/1794219566606-pgl-major-singapore-2026-team-rosters>)
 foi aberto, mas não trouxe conteúdo (só "PGL News"; provavelmente exige JavaScript). Não
 confirmamos se alguma troca já foi revertida, nem a escalação que de fato jogou. A leitura

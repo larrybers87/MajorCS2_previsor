@@ -1,69 +1,61 @@
-# Dúvidas abertas e divergências (atualizado em 26/11/2026, sessão 03)
+# Dúvidas abertas e divergências (atualizado em 26/11/2026, sessão 04)
 
 "RB" = `major-supplemental-rulebook.md` (cópia local; ver [fontes_valve.md](fontes_valve.md)).
 Citações em [regras_suica.md](regras_suica.md); decisões em [decisoes.md](decisoes.md).
 Fontes de imprensa são **secundárias**.
 
-## Urgentes (antes do Stage 2)
+## Urgentes (antes de 04:00 UTC de 28/11)
 
-### D17 — Horário da primeira partida do Stage 2
-Sábado 28/11, horário não confirmado. Pelo fuso de Singapura (UTC+8), manhã de sábado lá
-é **noite de sexta no Brasil** (hipótese). A previsão precisa estar enviada antes.
+### D29 — Definições operacionais da avaliação (D28)
+D28 não diz: (a) a probabilidade de "maior VRS fixo"; (b) o que é o "IC por bootstrap de
+simulações"; (c) como pontuar o cartel se a oficial for a previsão condicionada. Propostas
+em [avaliacao_stage2.md](avaliacao_stage2.md): (a) 0,595137; (b) intervalo das métricas em
+torneios simulados pelo próprio modelo (intervalo esperado se o modelo estiver certo, não
+IC da qualidade); (c) probabilidade condicionada à participação. **Confirmar.**
 
-### D25 — Substitutos
-FUT e Astralis começam o Major com o substituto ([substitutos.md](substitutos.md)). O B0
-usa os pontos VRS do elenco registrado. **Pergunta:** aceitamos assim no Stage 2 (hoje:
-sim, sem ajuste)? Um ajuste exigiria ratings por jogador, que não temos.
+### D32 — Anexo D25: só redução conjunta
+O anexo aplica a mesma redução a FUT e Astralis em cada cenário. **Pergunta:** basta, ou
+quer combinações separadas? (Mudar depois do prazo deixaria de ser pré-registrado.)
 
-### D28 — Qual previsão vale para avaliar o Stage 2
-Há mais de uma previsão publicada. **Proposta:** vale a última enviada ao GitHub antes do
-primeiro jogo do Stage 2; as anteriores são registro. Confirmar, e confirmar a métrica
-(log loss por partida e log score do cartel final).
+## Antes de 02/12 (Stage 3)
+
+### D30 — Checagem de desastre: limiar redundante
+"Passar de 0,70 ou ficar pior que o 50%": o 50% tem log loss 0,6931 < 0,70, então o 0,70
+nunca decide. Vale hoje o texto literal (limiar efetivo 0,6931). **Qual era a intenção?**
+Com limiar de 0,6931 e até 66 partidas dependentes, a média pode voltar ao B0 por acaso
+(o erro padrão do log loss do B0 em 30 partidas foi 0,023).
+
+### D31 — Definições operacionais do Stage 3
+Peso 1/4 para cada combinação de modelo e w; B1 congelado como avaliado, sem corrigir os
+pontos P1-P5; checagem com Stages 1 e 2 juntos, calculada uma vez
+([preregistro_stage3.md](preregistro_stage3.md)). **Confirmar.**
 
 ## Modelo e dados
 
-### D24 — Termos da Liquipedia
-A API MediaWiki "não é suportada" para fins que não sejam edição; os termos indicam a
-LiquipediaDB, com aprovação ([h10_formato.md](h10_formato.md)). A decisão 1 da sessão 02
-a listava como permitida. **Pergunta:** pedir acesso à LiquipediaDB? Abandonar?
-
 ### H10 — Formato das partidas históricas
-Estimativa conjunta `w = 0,68`, intervalo [0; 1] no perfil de verossimilhança: **não
-identificável** por resultados. Pela regra pré-registrada, o Stage 2 usa a média de
-`w = 0` e `w = 1`. O "ponto médio" foi lido como média das probabilidades dos extremos
-(D27). Só dados com formato resolvem.
-
-### D27 — Leitura de "ponto médio"
-Alternativa seria simular com `w = 0,5`. **Confirmar** a leitura adotada.
+Estimativa conjunta `w = 0,68`, intervalo [0; 1]: **não identificável** por resultados. A
+previsão usa a média de `w = 0` e `w = 1` (D27 fechada). Só dados com formato resolvem, e
+não há fonte em uso que os tenha.
 
 ### D21 — Favoritos fortes
-No teste (jun-nov/2026), acima de 80%: previsto 84,7%, observado 59,1% (n = 22, Wilson
-[38,7%; 76,7%], supondo independência). Há indício de excesso de confiança. Não corrigido:
-poucas partidas, e nada foi pré-registrado para corrigir. No Stage 2 poucas partidas
-chegam a essa faixa.
-
-### D26 — B1 para o Stage 3
-Não adotado no Stage 2 (IC da diferença contém zero). Os defeitos apontados na revisão
-(ordem dentro do dia, teto do RD, identidade) não foram corrigidos depois de ver o teste.
-**Pergunta:** qual será o critério para o Stage 3? O teste já foi visto; um teste limpo
-só com dados novos (por exemplo, partidas do Stage 2, poucas) ou pré-registrando
-correções e aceitando que o teste atual vira desenvolvimento.
+No teste, acima de 80%: previsto 84,6%, observado 59,1% (n = 22; diferença -25,5 pp,
+bootstrap por dias [-46,9; -6,2]). As outras faixas são compatíveis
+([calibracao_teste_b0.md](calibracao_teste_b0.md)). Só diagnóstico; nada ajustado.
 
 ### D19 — Ratings durante o Major
-O B0 não muda com os resultados. O B1 muda (`python -m sim.b1_ratings`), mas não foi
-adotado.
+O B0 não muda com os resultados. O B1 muda e entra no Stage 3 pela média (D26).
 
 ### D20 — Lacunas do histórico
-Sem partidas de 02/11 a 23/11; sem evento, tier, formato; LAN parcial.
+Sem partidas de 02/11 a 23/11; sem evento, tier, formato; LAN parcial. Sem estatísticas por
+jogador ou mapa ([fontes_dados.md](fontes_dados.md)).
 
 ### D22 — Disponibilidade real dos snapshots antigos
 Não verificado se cada arquivo do VRS foi publicado na data do nome nem se foi regenerado.
-Além disso, o B1 usa partidas até a véspera, que na fonte só aparecem em snapshot
-posterior; isso o favorece na comparação.
+O B1 usa partidas até a véspera, que na fonte só aparecem em snapshot posterior.
 
 ### D23 — Protocolo de avaliação
-Resolvido pelo split desenvolvimento/teste. Continua sem solução o V1 do design (corte no
-dia anterior ao evento): o VRS não informa o evento.
+Resolvido pelo split desenvolvimento/teste. O V1 do design (corte no dia anterior ao
+evento) segue sem solução: o VRS não informa o evento.
 
 ## Regras
 
@@ -92,3 +84,10 @@ dia anterior ao evento): o VRS não informa o evento.
 - **D14, D18:** push autorizado e feito; arquivos da Valve fora do histórico.
 - **D15:** THE ONE = 1win, GOSH = BC.Game (decisão 3 da sessão 03).
 - **D16:** CSV do Stage 1 recebido (rodadas 1 a 4; falta o placar da 5).
+- **D17:** primeiro jogo do Stage 2 em 28/11, 04:00 UTC; Bo1/Bo3 confirmados pelo
+  calendário (compatível com a engine).
+- **D24:** GRID descartado; LiquipediaDB opcional, a cargo do Larry; nenhuma coleta nova.
+- **D25:** B0 sem ajuste; anexo de sensibilidade (ver D32).
+- **D26:** Stage 3 = média 50/50 de B0 e B1 (ver D30, D31).
+- **D27:** média das probabilidades de w=0 e w=1.
+- **D28:** vale a última previsão enviada antes do prazo (ver D29).
