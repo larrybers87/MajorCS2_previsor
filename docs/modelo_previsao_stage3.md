@@ -4,7 +4,9 @@
 > `⟨…⟩` estão vazios de propósito. Copiar para `docs/previsao_stage3.md` antes de
 > preencher. Regras: [pré-registro](preregistro_stage3.md),
 > [emenda 1](preregistro_stage3_emenda_01.md),
-> [emenda 2](preregistro_stage3_emenda_02.md) e
+> [emenda 2](preregistro_stage3_emenda_02.md),
+> [emenda 3](preregistro_stage3_emenda_03.md),
+> [emenda 4](preregistro_stage3_emenda_04.md) e
 > [adendo](adendo_preregistro_stage1.md). O script da combinação e da checagem
 > **ainda não foi escrito**.
 
@@ -65,15 +67,15 @@ oficial não é ajustado**. A sensibilidade vai na seção 6-A, à parte.
 
 ## 4. Rodada de abertura (1v9 … 8v16)
 
-| Seeds | Time A | Time B | Bo | P(A) média | B0 | B1 | Confere com o anúncio? |
-|---|---|---|---|---:|---:|---:|---|
-| ⟨8 linhas⟩ | | | | | | | |
+| Seeds | Time A | Time B | Bo | P(A), modelo oficial | Confere com o anúncio? |
+|---|---|---|---|---:|---|
+| ⟨8 linhas⟩ | | | | | |
 
 ## 5. Fase suíça
 
-| Time | 3-0 | 3-1 | 3-2 | 2-3 | 1-3 | 0-3 | P(avançar) | só B0 | só B1 |
-|---|---|---|---|---|---|---|---|---|---|
-| ⟨16 linhas⟩ | | | | | | | | | |
+| Time | 3-0 | 3-1 | 3-2 | 2-3 | 1-3 | 0-3 | P(avançar) oficial | faixa na sensibilidade (mín. – máx.) |
+|---|---|---|---|---|---|---|---|---|
+| ⟨16 linhas⟩ | | | | | | | | |
 
 Posição final na suíça (P de cada posição, 1 a 16): ⟨arquivo⟩.
 
@@ -89,12 +91,11 @@ playoffs: **não coberto pelo pré-registro** — ⟨decidir antes de preencher�
 
 ## 6-A. Sensibilidade aos reservas (NÃO é a previsão oficial)
 
-Valores e método do desconto: ⟨emenda que os fixou, anterior a este cálculo⟩. Célula sem
-desconto igual à oficial? ⟨sim/não⟩.
-
-| Desconto Vitality | Desconto Legacy | P(avançar) Vitality | P(avançar) Legacy | P(título) Vitality | P(título) Legacy |
-|---|---|---:|---:|---:|---:|
-| ⟨uma linha por cenário⟩ | | | | | |
+[Emenda 4](preregistro_stage3_emenda_04.md): grade 3x3 (Vitality 0, −25, −50; Legacy 0,
+−50, −100 pontos VRS, com o equivalente no B1). Publica-se **só** o oficial e a faixa
+mínima-máxima de P(avançar) por time (coluna da seção 5); os cenários não são publicados.
+Cenário sem desconto igual à oficial? ⟨sim/não⟩. A troca de titular não foi confirmada
+pela PGL; ksloks não tem partida alguma com a Legacy no histórico.
 
 ## 7. Limites
 Sem mapas, veto, forma por jogador nem ajuste a substitutos; probabilidades fixas dentro

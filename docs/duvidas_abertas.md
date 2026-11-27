@@ -20,10 +20,6 @@ confirmado oficialmente**; 3º lugar em Bo3 é **hipótese**.
 Não coberto pelo pré-registro do Stage 3. **Decidir** antes de preencher a previsão
 ([esqueleto](modelo_previsao_stage3.md)).
 
-### D43 — Tamanho do desconto na sensibilidade dos reservas
-Decidido: modelo oficial sem ajuste e sensibilidade com e sem desconto
-([emenda 3](preregistro_stage3_emenda_03.md)). **Faltam** os valores e a aplicação ao B1;
-há uma proposta na emenda. Fixar antes de calcular a previsão do Stage 3.
 
 ### D40 — `claude/regras-verificadas.md` ausente
 Citada no pedido; não está no repositório e não foi fornecida.
@@ -95,6 +91,8 @@ evento) segue sem solução: o VRS não informa o evento.
 - **D37:** Larry confirmou os placares da rodada 5 e PARIVISION 9-13 FlyQuest (HLTV,
   conferido por ele); o quadro da Wikipedia (6-13) está errado.
 - **D38:** V3 retrospectivo com as 33 partidas rodado a pedido.
+- **D43:** grade dos reservas fixada na
+  [emenda 4 do Stage 3](preregistro_stage3_emenda_04.md).
 - **D39:** registrado em [adendo_preregistro_stage1.md](adendo_preregistro_stage1.md); a
   regra do Stage 3 não muda.
 - **D17:** primeiro jogo do Stage 2 em 28/11, 04:00 UTC; Bo1/Bo3 confirmados pelo
