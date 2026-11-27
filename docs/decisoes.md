@@ -105,6 +105,21 @@ A previsão antecipada não mudou (mesmos blobs git). SHA-256, nas duas formas:
   desastre; o teste já visto não pode ser usado como argumento. Pré-registro (commit antes
   de 02/12): [preregistro_stage3.md](preregistro_stage3.md).
 
+## 26/11/2026, 21:45 BRT (respostas da sessão de planejamento)
+
+- **D30 (corrigida):** o limiar 0,70 foi erro do planejamento. Voltar ao B0 puro só se a
+  média 50/50 for pior que o 50% com significância unilateral de 95% (bootstrap por
+  partidas) **e** o B1 sozinho for pior que o B0; se só a primeira valer, relatar falha
+  dos dois sem trocar nada. [Emenda 1 do Stage 3](preregistro_stage3_emenda_01.md).
+- **D29:** aprovada; 59,5% conferido (só dados pré-evento); comparação com as referências
+  por bootstrap pareado por partidas; o intervalo por simulações é teste de consistência.
+  [Emenda 1 da avaliação](avaliacao_stage2_emenda_01.md).
+- **D31:** confirmada: peso 1/4 por (B0, B1) x (w=0, w=1); hiperparâmetros e código do B1
+  congelados; ratings em walk-forward até a véspera de cada rodada.
+- **D32:** grade 3x3 no anexo, reexecutada na sexta.
+  [Emenda 1 do anexo](anexo_d25_emenda_01.md).
+- **Horários da rodada 5 do Stage 1:** sexta 27/11 às **03:00, 05:30 e 08:00 BRT**.
+
 ## Anteriores
 - Escopo temporal: a partir de 2025-06-01 (`claude/fontes-de-dados.md`).
 - Dashboard local por enquanto.

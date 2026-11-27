@@ -4,31 +4,20 @@
 Citações em [regras_suica.md](regras_suica.md); decisões em [decisoes.md](decisoes.md).
 Fontes de imprensa são **secundárias**.
 
-## Urgentes (antes de 04:00 UTC de 28/11)
-
-### D29 — Definições operacionais da avaliação (D28)
-D28 não diz: (a) a probabilidade de "maior VRS fixo"; (b) o que é o "IC por bootstrap de
-simulações"; (c) como pontuar o cartel se a oficial for a previsão condicionada. Propostas
-em [avaliacao_stage2.md](avaliacao_stage2.md): (a) 0,595137; (b) intervalo das métricas em
-torneios simulados pelo próprio modelo (intervalo esperado se o modelo estiver certo, não
-IC da qualidade); (c) probabilidade condicionada à participação. **Confirmar.**
-
-### D32 — Anexo D25: só redução conjunta
-O anexo aplica a mesma redução a FUT e Astralis em cada cenário. **Pergunta:** basta, ou
-quer combinações separadas? (Mudar depois do prazo deixaria de ser pré-registrado.)
-
 ## Antes de 02/12 (Stage 3)
 
-### D30 — Checagem de desastre: limiar redundante
-"Passar de 0,70 ou ficar pior que o 50%": o 50% tem log loss 0,6931 < 0,70, então o 0,70
-nunca decide. Vale hoje o texto literal (limiar efetivo 0,6931). **Qual era a intenção?**
-Com limiar de 0,6931 e até 66 partidas dependentes, a média pode voltar ao B0 por acaso
-(o erro padrão do log loss do B0 em 30 partidas foi 0,023).
+### D33 — "Até a véspera de cada rodada"
+O código congelado do B1 trata cada rodada como um dia: a rodada r vê todas as anteriores,
+mesmo as do mesmo dia do calendário. "Véspera" pode excluir a rodada anterior do mesmo
+dia. Adotada a leitura do pré-registro original (todas as anteriores) salvo resposta
+([emenda](preregistro_stage3_emenda_01.md)).
 
-### D31 — Definições operacionais do Stage 3
-Peso 1/4 para cada combinação de modelo e w; B1 congelado como avaliado, sem corrigir os
-pontos P1-P5; checagem com Stages 1 e 2 juntos, calculada uma vez
-([preregistro_stage3.md](preregistro_stage3.md)). **Confirmar.**
+## Sem prazo próximo
+
+### D34 — Comparação do log score do cartel
+O bootstrap pareado por partidas não se aplica a uma métrica por time. Proposta:
+diferença pontual e teste de consistência
+([emenda](avaliacao_stage2_emenda_01.md)). Convém decidir **antes de 04:00 UTC de 28/11**.
 
 ## Modelo e dados
 
@@ -38,8 +27,9 @@ previsão usa a média de `w = 0` e `w = 1` (D27 fechada). Só dados com formato
 não há fonte em uso que os tenha.
 
 ### D21 — Favoritos fortes
-No teste, acima de 80%: previsto 84,6%, observado 59,1% (n = 22; diferença -25,5 pp,
-bootstrap por dias [-46,9; -6,2]). As outras faixas são compatíveis
+No teste, acima de 80%: previsto 84,6% (média de w=0 e w=1; só w=0 dá 84,7%, o número da
+sessão 03), observado 59,1% (n = 22; diferença -25,5 pp, bootstrap por dias
+[-46,9; -6,2]). As outras faixas são compatíveis
 ([calibracao_teste_b0.md](calibracao_teste_b0.md)). Só diagnóstico; nada ajustado.
 
 ### D19 — Ratings durante o Major
@@ -90,4 +80,5 @@ evento) segue sem solução: o VRS não informa o evento.
 - **D25:** B0 sem ajuste; anexo de sensibilidade (ver D32).
 - **D26:** Stage 3 = média 50/50 de B0 e B1 (ver D30, D31).
 - **D27:** média das probabilidades de w=0 e w=1.
-- **D28:** vale a última previsão enviada antes do prazo (ver D29).
+- **D28:** vale a última previsão enviada antes do prazo.
+- **D29-D32:** respondidas em 26/11 21:45 (emendas à avaliação, ao Stage 3 e ao anexo).

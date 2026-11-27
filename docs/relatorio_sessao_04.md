@@ -82,3 +82,48 @@ Stage 3. Não usei o `leakage-reviewer` nos dois módulos novos (não ajustam mo
 5. Tem os links de gambling.com e pley.gg para registrar?
 
 **Parado aqui, aguardando.**
+
+---
+
+## Adendo: respostas de 26/11 21:45 BRT
+
+### Feito
+- **Três emendas em arquivos novos**, sem reescrever os originais, enviadas em 27/11
+  00:41:22 UTC (`a9e0eed`): [Stage 3](preregistro_stage3_emenda_01.md) (checagem de
+  desastre corrigida; D31 confirmada), [anexo D25](anexo_d25_emenda_01.md) (grade 3x3) e
+  [avaliação](avaliacao_stage2_emenda_01.md) (bootstrap pareado por partidas; intervalo
+  por simulações = teste de consistência).
+- **59,5% conferido:** 3.084/5.182, partidas de 01/06/2025 a 01/11/2026, antes do corte
+  (23/11) e do evento; ratings de snapshots anteriores a cada partida.
+- **Anexo 3x3** (condicionado), cenário (0, 0) igual à previsão publicada:
+
+| FUT \ Astralis | FUT avança (0 / -50 / -100) | Astralis avança (0 / -50 / -100) |
+|---|---|---|
+| FUT 0 | 72,9 / 73,1 / 73,3 | 54,9 / 49,3 / 43,7 |
+| FUT -50 | 68,1 / 68,3 / 68,6 | 55,2 / 49,6 / 44,0 |
+| FUT -100 | 62,9 / 63,2 / 63,5 | 55,5 / 49,9 / 44,3 |
+
+- Roteiro ensaiado de novo: **159 s**.
+
+### Correções
+- **Rodada 5 do Stage 1:** sexta às 03:00, 05:30 e 08:00 BRT. O item 5 acima supunha
+  01:00; estava errado. A previsão (21:14) e o anexo de quinta são anteriores a ela.
+- **84,7% x 84,6% (faixa acima de 80%):** são modelos diferentes. 84,7% é só w=0 (D21, sessão
+  03); 84,6% é a média de w=0 e w=1, usada na manchete (w=1 sozinho: 84,4%). Conferido:
+  as **mesmas 22 partidas** e o mesmo observado (59,1%) nas três versões.
+
+### Substitutos ([substitutos.md](substitutos.md))
+Abriram a gambling.com e as duas páginas da Strafe; **pley.gg e as três da rg.org
+recusaram (403)**. Achado: cmtry foi para a Astralis, mas segue no elenco VRS da FUT.
+SunPayus (FUT) é quem vinha jogando no lugar dele; Anlelele (Astralis) é um empréstimo
+para cobrir a ausência dele. A redução do anexo faz mais sentido para a Astralis que para
+a FUT. A gambling.com conta quatro substituições, as outras fontes cinco.
+
+### Perguntas em aberto
+- **D34 (antes de 28/11 04:00 UTC):** log score do cartel sem bootstrap por partidas:
+  basta diferença pontual e teste de consistência?
+- **D33 (antes de 02/12):** "véspera de cada rodada" exclui a rodada anterior do mesmo
+  dia?
+
+**Parado aqui, aguardando o relatório de sexta.**
+

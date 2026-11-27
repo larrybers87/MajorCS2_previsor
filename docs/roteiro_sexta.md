@@ -3,9 +3,13 @@
 **Prazo:** push antes de **sábado 28/11, 01:00 BRT (04:00 UTC)**.
 **Meta:** enviar até **sexta 18:00 BRT**. **Limite prático:** 23:00 BRT.
 
-Ensaiado em 26/11 com um desfecho fictício da rodada 5: V2, previsão, anexo, V3,
-conferência do `git push` (`--dry-run`) e a variante com a rodada 1 anunciada rodaram em
-**88 s** no total. Os 8 desfechos possíveis da rodada 5 foram ensaiados na sessão 03
+**Rodada 5 do Stage 1:** sexta às **03:00, 05:30 e 08:00 BRT**. A última começa às 08:00;
+sendo Bo3, deve terminar no fim da manhã (estimativa). Dá para rodar o roteiro a partir
+daí.
+
+Ensaiado em 26/11 com um desfecho fictício da rodada 5: V2, previsão, anexo (grade 3x3),
+V3, conferência do `git push` (`--dry-run`) e a variante com a rodada 1 anunciada rodaram
+em **159 s** no total (o anexo leva cerca de 1 minuto por execução). Os 8 desfechos possíveis da rodada 5 foram ensaiados na sessão 03
 (previsão e V3). O tempo que importa é o seu: preencher o CSV e conferir, uns 10 a 15
 minutos (estimativa).
 
@@ -25,7 +29,8 @@ git status            # deve estar limpo
    `predict_stage2 --stage1 data/manual/stage1_results.csv`
    Anote a pasta mostrada em "Gravado em" (`<PASTA>`). Se aparecer "Atenção:
    divergências", leia antes de continuar.
-4. Anexo: `python -m sim.anexo_d25 --stage1 data/manual/stage1_results.csv --official <PASTA>`
+4. Anexo (grade 3x3, ~1 min):
+   `python -m sim.anexo_d25 --stage1 data/manual/stage1_results.csv --official <PASTA>`
 5. V3: `python -m sim.v3_stage1`
 6. **Rodada 1 oficial do Stage 2:** comparar com `<PASTA>/opening_round.csv`.
    Se for diferente, criar `data/manual/stage2_results.csv` com o cabeçalho

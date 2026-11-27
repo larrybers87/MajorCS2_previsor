@@ -2,7 +2,33 @@
 
 O modelo **não foi alterado** por causa desta lista. A manchete do Stage 2 é o B0 sem
 ajuste; a sensibilidade para FUT e Astralis está no anexo
-[anexo_d25_protocolo.md](anexo_d25_protocolo.md). Vitality e Legacy: só no Stage 3.
+[anexo_d25_protocolo.md](anexo_d25_protocolo.md), emendado para uma grade 3x3
+([emenda 1](anexo_d25_emenda_01.md)). Vitality e Legacy: só no Stage 3.
+
+## FUT e Astralis: o mesmo jogador está no centro dos dois casos
+
+"Sai / entra" na tabela abaixo é em relação ao elenco **registrado** (o do VRS). Pela
+[Strafe (08/11)](https://www.strafe.com/news/read/astralis-announce-cmtrys-replacement-for-singapore-major-2026/)
+e pela [Strafe (28/10)](https://www.strafe.com/news/read/astralis-bring-back-jabbi-to-avoid-singapore-major-roster-conflict/):
+
+- **cmtry** foi contratado pela Astralis em outubro, mas **segue no elenco VRS da FUT**,
+  porque o novo jogador da FUT, SunPayus, não tinha as 5 partidas em 10 necessárias.
+- Por isso a **FUT** usa **SunPayus** como substituto registrado. Em campo, ele é quem
+  substituiu cmtry no time desde outubro, e não um reserva chamado de última hora
+  (**leitura nossa** das fontes e do histórico).
+- A **Astralis** não pode inscrever cmtry; no elenco VRS dela está **jabbi**, que, segundo
+  fontes citadas pela Strafe, não deve jogar. Entra **Anlelele**, emprestado pela Sashi.
+  A Strafe diz que Anlelele substitui **cmtry**; a gambling.com e a lista registrada dizem
+  **jabbi**. As duas descrições se referem a coisas diferentes (time real x registro).
+- Cinco esperados na Astralis (Strafe, 08/11): phzy, Staehr, ryu, siuhy, Anlelele.
+
+Histórico do VRS desde 01/09 (contagem nossa): cmtry, 4 partidas pela Astralis (14/10 a
+27/10); SunPayus, 4 pela FUT (24/10 a 29/10), as 4 últimas do núcleo; jabbi, 16 pela
+Astralis, incluindo as 3 últimas (28 e 29/10); Anlelele, só pela Sashi.
+
+**Consequência para o anexo D25:** "reduzir pontos porque joga um substituto" tem sentido
+mais claro para a Astralis (jogador emprestado, sem partidas com o time) do que para a FUT
+(escalação que já vinha jogando). O modelo não foi alterado.
 
 ## Quem começa com o substituto registrado
 
@@ -34,26 +60,46 @@ volta não pode substituir de novo. Logo, **a escalação pode mudar durante o M
 ## Fontes e confiança
 
 **Estado:** citado por duas fontes que reproduzem a lista oficial da PGL (gambling.com e
-pley.gg, 9/11); a página da PGL continua sem verificação direta. *Essas duas fontes foram
-informadas pelo Larry na sessão de planejamento de 26/11; as páginas não foram abertas por
-mim e não há links registrados.*
+pley.gg, 9/11); a página da PGL continua sem verificação direta.
 
-Também consultadas na sessão 03, concordantes nas cinco trocas:
+### Links citados no planejamento (abertos em 26/11)
+| Link | Resultado |
+|---|---|
+| [gambling.com: PGL confirms rosters](https://www.gambling.com/news/pgl-confirms-rosters-for-all-32-teams-at-the-singapore-major) (09/11) | **abriu**; cita e linka a lista da PGL |
+| [pley.gg, p=65983](https://pley.gg/?p=65983) | **não abriu (403)**; conteúdo não verificado por mim |
+| [rg.org: nomes e elencos](https://rg.org/news/esports/pgl-singapore-major-official-name-changes-gosh-the-one-bb-team-pvision-rosters) | **não abriu (403)** |
+| [rg.org: registro de Anlelele](https://rg.org/news/esports/astralis-anlelele-singapore-major-substitute-cmtry-vrs-report) | **não abriu (403)** |
+| [rg.org: cmtry fora](https://rg.org/news/esports/cmtry-miss-singapore-major-astralis-fut-nemiga-sunpayus-coolio) | **não abriu (403)** |
+| [Strafe: substituto de cmtry](https://www.strafe.com/news/read/astralis-announce-cmtrys-replacement-for-singapore-major-2026/) (08/11) | **abriu** |
+| [Strafe: volta de jabbi](https://www.strafe.com/news/read/astralis-bring-back-jabbi-to-avoid-singapore-major-roster-conflict/) (28/10) | **abriu** |
+
+Não se sabe qual das três páginas da rg.org foi a citada. Não houve nova tentativa nas que
+recusaram.
+
+### Divergências entre as fontes
+- **Quantas trocas:** gambling.com fala em **quatro** (Legacy, Vitality, Astralis, FUT) e
+  a frase sobre a 9z está truncada, com meyern listado e history como substituto. Shane
+  the Gamer, Wikipedia e SkinsMonkey falam em **cinco**, incluindo history por meyern na
+  9z (já eliminada).
+- **Quem Anlelele substitui:** jabbi (gambling.com) x cmtry (Strafe); ver acima.
+- **Partidas de SunPayus:** três (Strafe 28/10, até aquela data) e quatro (Strafe 08/11);
+  o VRS mostra quatro.
+- **Data:** a gambling.com diz em um trecho que o Major é "scheduled for November 9", o que
+  contradiz o próprio início em 24/11.
+
+### Também consultadas na sessão 03
 - [Shane the Gamer](https://www.shanethegamer.com/news/pgl-major-singapore-2026-rosters-substitutes/)
-  (publicada 09/11, atualizada 10/11): cita o anúncio de elencos da PGL; diz que os cinco
-  times começam com o substituto. Só dá o motivo para a Vitality (jL conta como titular no
-  registro; apEX é o reserva que comanda).
-- [Wikipedia](https://en.wikipedia.org/wiki/PGL_Major_Singapore_2026): coluna de
-  substitutos com "(replaced X)" nos mesmos cinco.
-- [SkinsMonkey](https://skinsmonkey.com/blog/pgl-major-singapore-2026/) (atualizada
-  25/11): mesmas cinco trocas.
+  (09/11, atualizada 10/11): cinco times começam com o substituto; só dá o motivo para a
+  Vitality (jL conta como titular no registro; apEX é o reserva que comanda).
+- [Wikipedia](https://en.wikipedia.org/wiki/PGL_Major_Singapore_2026): "(replaced X)" nos
+  mesmos cinco.
+- [SkinsMonkey](https://skinsmonkey.com/blog/pgl-major-singapore-2026/) (25/11): idem.
 
 **Sem verificação direta:** o anúncio da PGL
 (<https://news.pglesports.com/news/1794219566606-pgl-major-singapore-2026-team-rosters>)
-foi aberto, mas não trouxe conteúdo (só "PGL News"; provavelmente exige JavaScript). Não
-confirmamos se alguma troca já foi revertida, nem a escalação que de fato jogou. A leitura
-da Wikipedia e da SkinsMonkey foi parcial (páginas longas). HLTV e páginas da Liquipedia
-não foram acessados.
+não trouxe conteúdo quando aberto (só "PGL News"). Não confirmamos se alguma troca foi
+revertida, nem a escalação que de fato jogou. HLTV e páginas da Liquipedia não foram
+acessados.
 
 ## Registrados como substitutos, mas sem começar
 Segundo as mesmas fontes, cada um dos 32 times registrou um substituto: em 14 é o técnico;
