@@ -1,0 +1,19 @@
+delta,time,adversario,P(confronto),best_of,P(time vence)
+0,FUT,FlyQuest,0.928415,1,0.686684
+0,FUT,NiP,0.071585,1,0.576224
+0,Astralis,Imperial,0.511697,1,0.580511
+0,Astralis,100 Thieves,0.174998,1,0.529838
+0,Astralis,M80,0.164442,1,0.540553
+0,Astralis,Lynn Vision,0.148863,1,0.644600
+-50,FUT,FlyQuest,0.928415,1,0.665581
+-50,FUT,NiP,0.071585,1,0.552194
+-50,Astralis,Imperial,0.511697,1,0.556543
+-50,Astralis,100 Thieves,0.174998,1,0.505388
+-50,Astralis,M80,0.164442,1,0.516157
+-50,Astralis,Lynn Vision,0.148863,1,0.622063
+-100,FUT,FlyQuest,0.928415,1,0.643711
+-100,FUT,NiP,0.071585,1,0.527886
+-100,Astralis,Imperial,0.511697,1,0.532276
+-100,Astralis,100 Thieves,0.174998,1,0.480908
+-100,Astralis,M80,0.164442,1,0.491674
+-100,Astralis,Lynn Vision,0.148863,1,0.598920
