@@ -2,9 +2,9 @@
 
 > **A preencher depois do fim do Stage 2.** Os campos `⟨…⟩` estão vazios de propósito.
 > Copiar para `docs/resultado_stage2.md` antes de preencher. As regras abaixo vêm de
-> [avaliacao_stage2.md](avaliacao_stage2.md), [emenda 1](avaliacao_stage2_emenda_01.md) e
-> [emenda 2](avaliacao_stage2_emenda_02.md); em caso de diferença, valem elas. O código
-> desta avaliação **ainda não foi escrito**.
+> [avaliacao_stage2.md](avaliacao_stage2.md), [emenda 1](avaliacao_stage2_emenda_01.md),
+> [emenda 2](avaliacao_stage2_emenda_02.md) e [emenda 3](avaliacao_stage2_emenda_03.md);
+> em caso de diferença, valem elas. O código desta avaliação **ainda não foi escrito**.
 
 Preenchido em: ⟨data e hora⟩ · commit do código: ⟨hash⟩
 
@@ -77,9 +77,9 @@ Torneios simulados pelo próprio modelo oficial: 200.000 por extremo de w, semen
 
 ## 5. Leitura
 
-Regra quantitativa definida pelo Larry em 27/11/2026, antes do primeiro jogo do Stage 2.
-Decide só o rótulo; as métricas e o IC por bootstrap das emendas continuam a ser
-relatados.
+Regra quantitativa definida pelo Larry em 27/11/2026, antes do primeiro jogo do Stage 2,
+e registrada na [emenda 3](avaliacao_stage2_emenda_03.md). Decide só o rótulo; as métricas
+e o IC por bootstrap das emendas anteriores continuam a ser relatados.
 
 Para cada referência, em cada partida decidida `i`:
 `d_i = log loss do modelo − log loss da referência`.
@@ -87,15 +87,14 @@ Para cada referência, em cada partida decidida `i`:
 - `d` = média dos `d_i`; `n` = número de partidas.
 - `EP` = desvio padrão amostral dos `d_i` (divisor `n − 1`) dividido pela raiz de `n`
   (definição operacional: erro padrão da diferença **pareada**).
-- **"Melhor que a referência"**: somente se `d < −2 × EP`, ou seja, o log loss do modelo é
-  menor que o da referência por **mais** de 2 erros padrão.
-- **"Inconclusivo"**: qualquer outro caso, inclusive diferença igual a 2 EP e inclusive
-  modelo **pior** por mais de 2 EP.
+- **"Melhor que a referência"**: se `d < −2 × EP`.
+- **"Pior que a referência"**: se `d > +2 × EP`.
+- **"Inconclusivo"**: somente se `|d| ≤ 2 × EP`.
 
-| Contra | n | d | EP | −2 × EP | Leitura |
+| Contra | n | d | EP | 2 × EP | Leitura |
 |---|---:|---:|---:|---:|---|
-| 50% | ⟨⟩ | ⟨⟩ | ⟨⟩ | ⟨⟩ | ⟨melhor que a referência / inconclusivo⟩ |
-| Maior VRS fixo | ⟨⟩ | ⟨⟩ | ⟨⟩ | ⟨⟩ | ⟨melhor que a referência / inconclusivo⟩ |
+| 50% | ⟨⟩ | ⟨⟩ | ⟨⟩ | ⟨⟩ | ⟨melhor / pior / inconclusivo⟩ |
+| Maior VRS fixo | ⟨⟩ | ⟨⟩ | ⟨⟩ | ⟨⟩ | ⟨melhor / pior / inconclusivo⟩ |
 
 - Só o log loss recebe rótulo. Brier, log score dos cartéis e percentil são relatados sem
   rótulo; se o IC por bootstrap sugerir outra coisa, vale o rótulo desta regra e a
