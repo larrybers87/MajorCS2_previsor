@@ -123,7 +123,8 @@ def write_csv(path: Path, frame: pd.DataFrame) -> None:
 
 
 def percent(value: float) -> str:
-    return f"{100 * value:.1f}%"
+    """Porcentagem para tabelas; valor indefinido (NaN) vira "-"."""
+    return "-" if value != value else f"{100 * value:.1f}%"
 
 
 def markdown_table(header: Sequence[str], rows: Sequence[Sequence[str]]) -> list[str]:

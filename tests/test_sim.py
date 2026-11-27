@@ -237,6 +237,7 @@ def test_predict_stage2_conditioned(files):
     mean = (table["P(avançar) w=0"] + table["P(avançar) w=1"]) / 2
     np.testing.assert_allclose(table["P(avançar)"], mean, atol=2e-6)
     assert (table["P(avançar) w=0"] != table["P(avançar) w=1"]).any()
+    assert "nan" not in (folder / "summary.md").read_text(encoding="utf-8")
     pending = pd.read_csv(folder / "stage1_next_round.csv")
     assert set(pending["rodada"]) == {4} and len(pending) == 6
     # Saídas em LF e hash da cópia dos parâmetros reproduzível.
