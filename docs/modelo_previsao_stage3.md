@@ -6,7 +6,8 @@
 > [emenda 1](preregistro_stage3_emenda_01.md),
 > [emenda 2](preregistro_stage3_emenda_02.md),
 > [emenda 3](preregistro_stage3_emenda_03.md),
-> [emenda 4](preregistro_stage3_emenda_04.md) e
+> [emenda 4](preregistro_stage3_emenda_04.md),
+> [emenda 5](preregistro_stage3_emenda_05.md) e
 > [adendo](adendo_preregistro_stage1.md). Scripts: `python -m sim.stage3_check` e depois
 > `python -m sim.predict_stage3`.
 
@@ -100,6 +101,11 @@ playoffs: **não coberto pelo pré-registro** — ⟨adendo antes de 10/12⟩.
 mínima-máxima de P(avançar) por time (coluna da seção 5); os cenários não são publicados.
 Cenário sem desconto igual à oficial? ⟨sim/não⟩. A troca de titular não foi confirmada
 pela PGL; ksloks não tem partida alguma com a Legacy no histórico.
+
+## 6-B. Suplementar (fora do texto principal)
+
+[Emenda 5](preregistro_stage3_emenda_05.md): componentes B0 e B1, sem desconto, em
+`supplement_b0_b1.csv` na pasta da previsão. Não é a previsão oficial.
 
 ## 7. Limites
 Sem mapas, veto, forma por jogador nem ajuste a substitutos; probabilidades fixas dentro

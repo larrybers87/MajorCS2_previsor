@@ -21,8 +21,9 @@ Não coberto pelo pré-registro do Stage 3. **Adiado** por decisão de 27/11: ad
 10/12.
 
 ### D45 — W.O. no Stage 2 ou no Stage 3
-Nem o protocolo de avaliação nem a checagem dizem como pontuar partida não disputada.
-**Decidir** se ocorrer.
+Sem regra definida, por decisão de 27/11: **decidir só se ocorrer**. Atenção: o código
+trataria um W.O. lançado no CSV como partida normal (na avaliação, na checagem e nos
+ratings do B1); **não rodar esses passos antes de decidir**.
 
 
 ### D40 — `claude/regras-verificadas.md` ausente

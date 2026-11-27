@@ -5,9 +5,11 @@ Uso, depois da checagem de desastre::
     python -m sim.predict_stage3
 
 Modelo oficial: o que a checagem mandar (média 50/50 de B0 e B1, ou B0 puro), **sem
-desconto**. Publica o resultado oficial e, por time, a faixa mínima-máxima de P(avançar)
-na grade de sensibilidade da emenda 4 (os cenários não são gravados). Os playoffs não
-são calculados: o modelo deles fica para um adendo antes de 10/12. Não faz commit.
+desconto**. O texto principal traz o resultado oficial e, por time, a faixa mínima-máxima
+de P(avançar) na grade de sensibilidade da emenda 4 (os cenários não são gravados). As
+componentes B0 e B1, sem desconto, vão numa tabela suplementar da pasta (emenda 5). Os
+playoffs não são calculados: o modelo deles fica para um adendo antes de 10/12. Não faz
+commit.
 """
 
 from __future__ import annotations
@@ -36,6 +38,7 @@ from .common import (
 from .format_config import ACTIVE_FORMAT, DEFAULT_FORMAT
 from .stage3_check import CHECK_DIR, CONSEQUENCES, add_input_arguments, input_hashes
 from .stage3_model import (
+    MODELS,
     SENSITIVITY_GRID,
     assert_frozen_b1_code,
     b1_ratings_at,
@@ -83,6 +86,28 @@ def sensitivity_range(
     return pd.DataFrame({"min": frame.min(), "max": frame.max()}), list(zero)
 
 
+def component_table(
+    points, ratings, used: list[str], base, simulations: int, seed: int
+) -> pd.DataFrame:
+    """B0 e B1 separados (média de w=0 e w=1, sem desconto): tabela suplementar.
+
+    Os dois são calculados mesmo quando só o B0 entra na previsão oficial; a coluna
+    ``na_oficial`` diz quais entraram.
+    """
+    frames = []
+    for model in MODELS:
+        fns = list(prob_fns(points, ratings, [model]).values())
+        records, _ = simulate_average(fns, base, simulations, seed)
+        frame = pd.DataFrame(records, columns=[f"P({k})" for k in FINAL_RECORD_LABELS])
+        frame.insert(0, "componente", model)
+        frame.insert(1, "na_oficial", model in used)
+        frame.insert(2, "seed", range(1, 17))
+        frame.insert(3, "time", list(base.names))
+        frame["P(avançar)"] = records[:, :3].sum(axis=1)
+        frames.append(frame)
+    return pd.concat(frames, ignore_index=True)
+
+
 def main(argv: list[str] | None = None) -> int:
     cli = argparse.ArgumentParser(description="Previsão do Stage 3")
     add_input_arguments(cli)
@@ -119,6 +144,7 @@ def main(argv: list[str] | None = None) -> int:
     advance = records[:, :3].sum(axis=1)
     if list(advance) != zero:
         raise RuntimeError("a célula sem desconto não reproduziu a previsão oficial")
+    components = component_table(points, ratings, models, base, args.sims, args.seed)
 
     columns = [f"P({label})" for label in FINAL_RECORD_LABELS]
     table = pd.DataFrame(records, columns=columns)
@@ -207,6 +233,9 @@ def main(argv: list[str] | None = None) -> int:
             "",
             "Posição final na suíça: `positions.csv`.",
             "",
+            "Suplementar (emenda 5): componentes B0 e B1, sem desconto, em "
+            "`supplement_b0_b1.csv`.",
+            "",
         ]
     )
     out = new_output_dir(args.out, metadata)
@@ -214,6 +243,7 @@ def main(argv: list[str] | None = None) -> int:
     write_csv(out / "positions.csv", position_table)
     write_csv(out / "opening_round.csv", opening)
     write_csv(out / "b1_ratings.csv", rating_table)
+    write_csv(out / "supplement_b0_b1.csv", components)
     write_text(out / "summary.md", text)
     write_json(out / "meta.json", metadata)
     print(text)

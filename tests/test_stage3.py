@@ -19,12 +19,15 @@ from sim.stage3_model import (
     load_stages,
     mean_prob_fn,
     prob_fns,
+    simulate_average,
     vrs_points,
 )
 from backtest.v3_compare import B1_BETAS
+from sim.format_config import DEFAULT_FORMAT
 from sim.results import ResultRow
 from sim.stages import stage3_names
 
+from conftest import NAMES
 from test_live import play, rows_of, to_csv, world  # noqa: F401 (world é fixture)
 
 
@@ -179,9 +182,38 @@ def test_check_then_prediction(world, capsys):  # noqa: F811
     # Os cenários da grade não são publicados (emenda 4).
     assert sorted(p.name for p in folder.iterdir()) == [
         "b1_ratings.csv", "meta.json", "opening_round.csv", "positions.csv",
-        "probabilities.csv", "summary.md",
+        "probabilities.csv", "summary.md", "supplement_b0_b1.csv",
     ]  # fmt: skip
     assert (pd.read_csv(folder / "opening_round.csv")["best_of"] == 3).all()
+
+    # Suplementar: B0 e B1 separados; a oficial é a combinação do que a checagem mandou.
+    parts = pd.read_csv(folder / "supplement_b0_b1.csv")
+    assert list(parts["componente"].unique()) == ["B0", "B1"] and len(parts) == 32
+    used = parts[parts["na_oficial"]]
+    assert sorted(used["componente"].unique()) == (
+        ["B0"] if meta["decision"] == BACK_TO_B0 else ["B0", "B1"]
+    )
+    for column in (*columns, "P(avançar)"):
+        mean = used.groupby("time")[column].mean()
+        np.testing.assert_allclose(mean.loc[table.index], table[column], atol=2e-6)
+    for _, part in parts.groupby("componente"):
+        assert part["P(avançar)"].sum() == pytest.approx(8.0, abs=1e-4)
+    # O texto principal não traz as componentes.
+    text = (folder / "summary.md").read_text(encoding="utf-8")
+    assert "supplement_b0_b1.csv" in text and "| B0 |" not in text
+
+
+def test_supplement_keeps_both_components_when_only_b0_is_official():
+    base = DEFAULT_FORMAT.stage_state(3, NAMES)
+    points = {n: 1800.0 - 20 * i for i, n in enumerate(NAMES)}
+    ratings = {n: 1700.0 + 10 * i for i, n in enumerate(NAMES)}
+    parts = predict_stage3.component_table(points, ratings, ["B0"], base, 500, 1)
+    flags = parts.groupby("componente")["na_oficial"].unique().to_dict()
+    assert (list(flags["B0"]), list(flags["B1"])) == ([True], [False])
+    only_b0, _ = simulate_average(list(prob_fns(points, ratings, ["B0"]).values()), base, 500, 1)
+    np.testing.assert_array_equal(
+        parts[parts["componente"] == "B0"]["P(avançar)"], only_b0[:, :3].sum(axis=1)
+    )
 
 
 def test_prediction_rejects_inputs_that_changed_after_the_check(world, capsys):  # noqa: F811

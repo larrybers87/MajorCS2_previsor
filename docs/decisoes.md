@@ -165,6 +165,13 @@ A previsão antecipada não mudou (mesmos blobs git). SHA-256, nas duas formas:
 
 - **Previsão do Stage 3:** 200.000 simulações por variante e semente 20261202
   (confirmadas antes de conhecer os seeds do Stage 3).
+- **Definições da seção E4.5 da emenda 4 aceitas**, sem emenda nova: desconto só nas
+  probabilidades, fórmula exata no B1 e só os descontos do B0 se a checagem mandar usar só
+  o B0.
+- **Relatório do Stage 3:** só o oficial e a faixa mín.–máx. no texto principal;
+  componentes B0 e B1 numa tabela suplementar da pasta
+  ([emenda 5](preregistro_stage3_emenda_05.md)).
+- **W.O.:** sem regra definida; decidir só se ocorrer.
 
 ## Anteriores
 - Escopo temporal: a partir de 2025-06-01 (`claude/fontes-de-dados.md`).
